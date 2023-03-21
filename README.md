@@ -5,5 +5,5 @@ This repository containts the evaluation and implementation of MonteCarlo worklo
 The project is based on the [Tartan benchmarking suite](https://github.com/uuudown/Tartan/blob/master/IISWC-18.pdf)
 
 ## Team
-* [Andrea Paparella](https://github.com/andreapiras00)
-* [Andrea Piras Francesco](https://github.com/engpap)
+* [Andrea Paparella](https://github.com/engpap)(https://github.com/andreapiras00)
+* [Andrea Piras](https://github.com/andreapiras00)
