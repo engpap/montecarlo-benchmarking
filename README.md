@@ -7,3 +7,8 @@ The project is based on the [Tartan benchmarking suite](https://github.com/uuudo
 ## Team
 * [Andrea Paparella](https://github.com/engpap)
 * [Andrea Piras](https://github.com/andreapiras00)
+
+
+## Useful Commands
+```conda deactivate``` 
+```conda activate``` 
