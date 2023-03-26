@@ -4,11 +4,78 @@ This is a project of the [High Performance Processors and Systems](https://www4.
 This repository contains the evaluation and implementation of MonteCarlo workload on multi-GPU systems via Unified Memory.
 The project is based on the [Tartan benchmarking suite](https://github.com/uuudown/Tartan/blob/master/IISWC-18.pdf)
 
+## From CUDA9 to CUDA11
+Running the original Tartan code for Montecarlo produces an error indicating that the version specified in the <em>shared.mk</em> makefile is CUDA9 (version 9.1). In detail, we obtained the following error:
+```
+rm -f MonteCarlo
+/usr/local/cuda-9.1//bin/nvcc -arch=sm_60  -O3  -I. -I/usr/local/cuda-9.1//include -I/home/ubuntu/NVIDIA_GPU_Computing_SDK//C/common/inc -I../../common/inc/ -I/home/ubuntu/NVIDIA_GPU_Computing_SDK//shared/inc -I/home/ubuntu/opt/miniconda2/pkgs/mpich2-1.4.1p1-0//include -I/home/lian599/include/ -L. -L/home/ubuntu/NVIDIA_GPU_Computing_SDK//C/lib -L/usr/local/cuda-9.1//lib64/ -L/home/ubuntu/NVIDIA_GPU_Computing_SDK//shared/lib -L/home/ubuntu/opt/miniconda2/pkgs/mpich2-1.4.1p1-0//lib -L/home/lian599/lib/ -L/usr/lib/ -L/usr/lib64  -lcuda -lmpich -lmpl  -lstdc++ -lm -I../common/inc -lcurand MonteCarloMultiGPU.cpp MonteCarlo_kernel.cu MonteCarlo_gold.cpp multithreading.cpp -o MonteCarlo
+/bin/bash: /usr/local/cuda-9.1//bin/nvcc: No such file or directory
+make: *** [Makefile:39: MonteCarlo] Error 127
+$Run montecarlo:/usr/bin/time -f '%e' ./run_1g_strong.sh
+scale-up,MTC,strong,1,0.0
+$Run montecarlo:/usr/bin/time -f '%e' ./run_1g_weak.sh
+scale-up,MTC,weak,1,0.0
+```
+
+By simply changing the CUDA directory in the makefile, from: <br />
+```CUDA_DIR = /usr/local/cuda-9.1/```<br />
+To:<br />
+```CUDA_DIR = /usr/local/cuda/``` <br />
+We were able to run the program with CUDA11.
+
+
+Running Montecarlo with CUDA11 (version 11.7) produces an error indicating that the linker is unable to find several libraries that are required by the program. Specifically, the libraries <em>lcutil_x86_64</em>, <em>lmpich</em>, <em>lmpl</em>, and <em>lnccl</em> cannot be found. In detail, we obtained the following error:
+```
+rm -f MonteCarlo
+/usr/local/cuda-11.7//bin/nvcc -arch=sm_60  -O3  -I. -I/usr/local/cuda-11.7//include -I/home/ubuntu/NVIDIA_GPU_Computing_SDK//C/common/inc -I../../common/inc/ -I/home/ubuntu/NVIDIA_GPU_Computing_SDK//shared/inc -I/home/ubuntu/opt/miniconda2/pkgs/mpich2-1.4.1p1-0//include -I/home/lian599/include/ -L. -L/home/ubuntu/NVIDIA_GPU_Computing_SDK//C/lib -L/usr/local/cuda-11.7//lib64/ -L/home/ubuntu/NVIDIA_GPU_Computing_SDK//shared/lib -L/home/ubuntu/opt/miniconda2/pkgs/mpich2-1.4.1p1-0//lib -L/home/lian599/lib/ -L/usr/lib/ -L/usr/lib64  -lcutil_x86_64 -lcuda -lmpich -lmpl -lnccl -lstdc++ -lm -I../common/inc -lcurand MonteCarloMultiGPU.cpp MonteCarlo_kernel.cu MonteCarlo_gold.cpp multithreading.cpp -o MonteCarlo
+/usr/bin/ld: cannot find -lcutil_x86_64
+/usr/bin/ld: cannot find -lmpich
+/usr/bin/ld: cannot find -lmpl
+/usr/bin/ld: cannot find -lnccl
+collect2: error: ld returned 1 exit status
+make: *** [Makefile:39: MonteCarlo] Error 1
+$Run montecarlo:/usr/bin/time -f '%e' ./run_1g_strong.sh
+scale-up,MTC,strong,1,0.0
+$Run montecarlo:/usr/bin/time -f '%e' ./run_1g_weak.sh
+scale-up,MTC,weak,1,0.0
+```
+
+By installing mpich library through ```sudo apt install mpich``` and then running <em>run_scale_up.py</em>, we obtained:
+```
+rm -f MonteCarlo
+/usr/local/cuda//bin/nvcc -arch=sm_60  -O3  -I. -I/usr/local/cuda//include -I/home/ubuntu/NVIDIA_GPU_Computing_SDK//C/common/inc -I../../common/inc/ -I/home/ubuntu/NVIDIA_GPU_Computing_SDK//shared/inc -I/home/ubuntu/opt/miniconda2/pkgs/mpich2-1.4.1p1-0//include -I/home/lian599/include/ -L. -L/home/ubuntu/NVIDIA_GPU_Computing_SDK//C/lib -L/usr/local/cuda//lib64/ -L/home/ubuntu/NVIDIA_GPU_Computing_SDK//shared/lib -L/home/ubuntu/opt/miniconda2/pkgs/mpich2-1.4.1p1-0//lib -L/home/lian599/lib/ -L/usr/lib/ -L/usr/lib64  -lcutil_x86_64 -lcuda -lmpich -lmpl -lnccl -lstdc++ -lm -I../common/inc -lcurand MonteCarloMultiGPU.cpp MonteCarlo_kernel.cu MonteCarlo_gold.cpp multithreading.cpp -o MonteCarlo
+/usr/bin/ld: cannot find -lcutil_x86_64
+/usr/bin/ld: cannot find -lnccl
+collect2: error: ld returned 1 exit status
+make: *** [Makefile:39: MonteCarlo] Error 1
+$Run montecarlo:/usr/bin/time -f '%e' ./run_1g_strong.sh
+scale-up,MTC,strong,1,0.0
+$Run montecarlo:/usr/bin/time -f '%e' ./run_1g_weak.sh
+scale-up,MTC,weak,1,0.0
+```
+
+Eventually, we notided that <em>cutil_x86_64</em> and <em>nccl</em> libraries were not used for the Montecarlo algorithm, so we decided to remove them from the makefile <em>shared.mk</em>.
+So, we passed from: <br />
+```NVCC_LIB = -lcutil_x86_64 -lcuda -lmpich -lmpl -lnccl```<br />
+To:<br />
+```NVCC_LIB = -lcuda -lmpich -lmpl``` <br />
+
+By doing these steps, we were able to execute <em>run_scale_up.py</em>. We obtained this output:
+```
+MonteCarlo_gold.cpp multithreading.cpp -o MonteCarlo
+$Run montecarlo:/usr/bin/time -f '%e' ./run_1g_strong.sh
+scale-up,MTC,strong,1,3.058
+$Run montecarlo:/usr/bin/time -f '%e' ./run_1g_weak.sh
+scale-up,MTC,weak,1,3.0460000000000003
+```
+
+
+
+
 ## Team
 * [Andrea Paparella](https://github.com/engpap)
 * [Andrea Piras](https://github.com/andreapiras00)
 
-
 ## Useful Commands
-```conda deactivate``` 
+```conda deactivate```<br />
 ```conda activate``` 
