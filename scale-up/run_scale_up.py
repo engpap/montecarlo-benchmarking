@@ -5,7 +5,7 @@
 #========================================================================
 
 import string
-import commands
+import subprocess
 import os
 import math
 
@@ -44,13 +44,13 @@ def run_one_app(app, outfile, schm):
     for s in scale:
         for g in gpus:
             cmd = str("/usr/bin/time -f '%e' ./run_") + str(g) + str("g_") + str(s) + ".sh"
-            print str('$Run ') + app[0] + ':' + cmd
+            print(str('$Run ') + app[0] + ':' + cmd)
             time = 0.0
             for t in range(0,TIMES):
-                time += float(commands.getoutput(cmd).split('\n')[-1])
+                time += float(subprocess.getoutput(cmd).split('\n')[-1])
             time /= TIMES
             line = str(schm) + "," + str(app[1]) + "," + str(s) + "," + str(g) + "," + str(time)
-            print line
+            print(line)
             outfile.write(line + "\n")
 
     os.chdir("..")
@@ -59,6 +59,8 @@ def run_one_app(app, outfile, schm):
 for schm in schms:
     outfile_name = str("res_") + str(schm) + ".txt"
     outfile_path = str("./result/") + outfile_name
+    if not os.path.exists("./result"):
+        os.mkdir("./result")
     outfile = open(outfile_path, "w")
 
     os.chdir(schm)
