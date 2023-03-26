@@ -14,7 +14,8 @@ TIMES = 5
 #gpus = [1,2,4,8]
 gpus = [1] # avoid running with higher number of GPUs until required
 scale = ["strong","weak"]
-schms = ["scale-up", "scale-up-nvlink"]
+schms = ["scale-up"]
+#schms = ["scale-up", "scale-up-nvlink"] # commented since only scale-up will be used
 #====================================================================
 
 apps = []
