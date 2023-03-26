@@ -11,28 +11,29 @@ import math
 
 #============================= CONFIG ===============================
 TIMES = 5
-gpus = [1,2,4,8]
+#gpus = [1,2,4,8]
+gpus = [1] # avoid running with higher number of GPUs until required
 scale = ["strong","weak"]
 schms = ["scale-up", "scale-up-nvlink"]
 #====================================================================
 
 apps = []
 #============================== APP =================================
-convnet2 = ["convnet2", "CNN"]
-cusimann = ["cusimann", "CSM"]
-gmm = ["gmm", "GMM"]
-kmeans = ["kmeans", "KMN"]
+#convnet2 = ["convnet2", "CNN"]
+#cusimann = ["cusimann", "CSM"]
+#gmm = ["gmm", "GMM"]
+#kmeans = ["kmeans", "KMN"]
 montercarlo = ["montecarlo", "MTC"]
-planar = ["planar", "PLN"]
-trueke = ["trueke", "TRK"]
+#planar = ["planar", "PLN"]
+#trueke = ["trueke", "TRK"]
 
-apps.append(convnet2)
-apps.append(cusimann)
-apps.append(gmm)
-apps.append(kmeans)
+#apps.append(convnet2)
+#apps.append(cusimann)
+#apps.append(gmm)
+#apps.append(kmeans)
 apps.append(montercarlo)
-apps.append(planar)
-apps.append(trueke)
+#apps.append(planar)
+#apps.append(trueke)
 #====================================================================
 
 def run_one_app(app, outfile, schm):
