@@ -69,7 +69,120 @@ $Run montecarlo:/usr/bin/time -f '%e' ./run_1g_weak.sh
 scale-up,MTC,weak,1,3.0460000000000003
 ```
 
+Insted, by running:
+```
+  $ cd scale-up/$app$/
+  $ make
+  $ chmod +x run.sh
+  $ ./run.sh
+```
 
+We obtained
+```
+./MonteCarlo Starting...
+
+Using single CPU thread for multiple GPUs
+MonteCarloMultiGPU
+==================
+Parallelization method  = streamed
+Problem scaling         = weak
+Number of GPUs          = 1
+Total number of options = 1048576
+Number of paths         = 262144
+main(): generating input data...
+main(): starting 1 host threads...
+main(): GPU statistics, streamed
+GPU Device #0: Tesla P100-SXM2-16GB
+Options         : 1048576
+Simulation paths: 262144
+
+Total time (ms.): 2680.186035
+        Note: This is elapsed time for all to compute.
+Options per sec.: 391232.543654
+main(): comparing Monte Carlo and Black-Scholes results...
+Shutting down...
+Test Summary...
+L1 norm        : 4.810705E-04
+Average reserve: 12.511987
+
+NOTE: The CUDA Samples are not meant for performance measurements. Results may vary when GPU Boost is enabled.
+
+Test passed
+```
+
+Secondly, by running:
+```
+./run_1g_strong.sh
+```
+We obtained:
+```
+./MonteCarlo Starting...
+
+Using single CPU thread for multiple GPUs
+MonteCarloMultiGPU
+==================
+Parallelization method  = streamed
+Problem scaling         = strong
+Number of GPUs          = 1
+Total number of options = 1048576
+Number of paths         = 262144
+main(): generating input data...
+main(): starting 1 host threads...
+main(): GPU statistics, streamed
+GPU Device #0: Tesla P100-SXM2-16GB
+Options         : 1048576
+Simulation paths: 262144
+
+Total time (ms.): 2689.382080
+        Note: This is elapsed time for all to compute.
+Options per sec.: 389894.767191
+main(): comparing Monte Carlo and Black-Scholes results...
+Shutting down...
+Test Summary...
+L1 norm        : 4.810705E-04
+Average reserve: 12.511987
+
+NOTE: The CUDA Samples are not meant for performance measurements. Results may vary when GPU Boost is enabled.
+
+Test passed
+```
+
+Thirdly, by running:
+```
+./run_1g_weak.sh
+```
+We obtained:
+```
+./MonteCarlo Starting...
+
+Using single CPU thread for multiple GPUs
+MonteCarloMultiGPU
+==================
+Parallelization method  = streamed
+Problem scaling         = weak
+Number of GPUs          = 1
+Total number of options = 1048576
+Number of paths         = 262144
+main(): generating input data...
+main(): starting 1 host threads...
+main(): GPU statistics, streamed
+GPU Device #0: Tesla P100-SXM2-16GB
+Options         : 1048576
+Simulation paths: 262144
+
+Total time (ms.): 2665.562012
+        Note: This is elapsed time for all to compute.
+Options per sec.: 393378.955504
+main(): comparing Monte Carlo and Black-Scholes results...
+Shutting down...
+Test Summary...
+L1 norm        : 4.810705E-04
+Average reserve: 12.511987
+
+NOTE: The CUDA Samples are not meant for performance measurements. Results may vary when GPU Boost is enabled.
+
+Test passed
+```
 
 
 ## Team
