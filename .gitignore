@@ -6,3 +6,4 @@
 *.fatbin
 /scale-up/result
 /scale-up/log.txt
+ap*.sh
