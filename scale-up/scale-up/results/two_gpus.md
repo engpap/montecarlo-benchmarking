@@ -10,14 +10,14 @@ Running Montecarlo with CUDA11 (version 11.7) produces an error indicating that 
 ```
 rm -f MonteCarlo
 /usr/local/cuda-11.7//bin/nvcc -arch=sm_60  -O3  -I. -I/usr/local/cuda-11.7//include -I/home/ubuntu/NVIDIA_GPU_Computing_SDK//C/common/inc -I../../common/inc/ -I/home/ubuntu/NVIDIA_GPU_Computing_SDK//shared/inc -I/home/ubuntu/opt/miniconda2/pkgs/mpich2-1.4.1p1-0//include -I/home/lian599/include/ -L. -L/home/ubuntu/NVIDIA_GPU_Computing_SDK//C/lib -L/usr/local/cuda-11.7//lib64/ -L/home/ubuntu/NVIDIA_GPU_Computing_SDK//shared/lib -L/home/ubuntu/opt/miniconda2/pkgs/mpich2-1.4.1p1-0//lib -L/home/lian599/lib/ -L/usr/lib/ -L/usr/lib64  -lcuda -lmpich -lmpl  -lstdc++ -lm -I../common/inc -lcurand MonteCarloMultiGPU.cpp MonteCarlo_kernel.cu MonteCarlo_gold.cpp multithreading.cpp -o MonteCarlo
+/usr/bin/ld: cannot find -lmpich
+/usr/bin/ld: cannot find -lmpl
+collect2: error: ld returned 1 exit status
+make: *** [Makefile:39: MonteCarlo] Error 1
 $Run montecarlo:/usr/bin/time -f '%e' ./run_1g_strong.sh
-scale-up,MTC,strong,1,1.456
-$Run montecarlo:/usr/bin/time -f '%e' ./run_2g_strong.sh
-scale-up,MTC,strong,2,1.1199999999999999
+scale-up,MTC,strong,1,0.0
 $Run montecarlo:/usr/bin/time -f '%e' ./run_1g_weak.sh
-scale-up,MTC,weak,1,1.44
-$Run montecarlo:/usr/bin/time -f '%e' ./run_2g_weak.sh
-scale-up,MTC,weak,2,1.8760000000000001
+scale-up,MTC,weak,1,0.0
 ```
 
 By installing mpich library through ```sudo apt install mpich``` and then running <em>run_scale_up.py</em>, we were able to fix the errors and obtained:
