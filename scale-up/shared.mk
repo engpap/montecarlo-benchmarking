@@ -25,7 +25,7 @@ SHELL = /bin/bash
 
 ARCH=sm_60
 # CUDA toolkit installation path
-CUDA_DIR = /usr/local/cuda/
+CUDA_DIR = /usr/local/cuda-11.7/
 
 # CUDA driver path
 CUDA_DRIVER_DIR = /usr/lib/nvidia-390/
