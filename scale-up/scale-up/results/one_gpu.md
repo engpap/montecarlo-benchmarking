@@ -63,7 +63,7 @@ $Run montecarlo:/usr/bin/time -f '%e' ./run_1g_weak.sh
 scale-up,MTC,weak,1,3.0460000000000003
 ```
 
-Insted, by running:
+Instead, by running:
 ```
   $ cd scale-up/$app$/
   $ make
