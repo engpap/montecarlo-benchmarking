@@ -14,8 +14,8 @@ import math
 
 #============================= CONFIG ===============================
 TIMES = 5
-gpus = [1,2,4,8]
-#gpus = [1,2] # avoid running with higher number of GPUs until required
+#gpus = [1,2,4,8]
+gpus = [1] # avoid running with higher number of GPUs until required
 scale = ["strong","weak"]
 #schms = ["scale-up", "scale-up-nvlink"] # commented since only scale-up will be used
 schms = ["scale-up"]
@@ -46,8 +46,8 @@ def run_one_app(app, outfile, schm):
             for t in range(0,TIMES):
                 time += float(subprocess.getoutput(cmd).split('\n')[-1])
             time /= TIMES
-            # Format output line with schema, app name, scale, GPU, and execution time
-            line = str(schm) + "," + str(app[1]) + "," + str(s) + "," + str(g) + "," + str(time)
+            # Format output line with schema, app name, scale, GPU, and execution time in milliseconds
+            line = str(schm) + "," + str(app[1]) + "," + str(s) + "," + str(g) + "," + str(time*1000) + 'ms'
             print(line)
             outfile.write(line + "\n")
 
