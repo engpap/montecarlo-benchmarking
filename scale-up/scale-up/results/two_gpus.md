@@ -1,5 +1,5 @@
 ## From CUDA9 to CUDA11
-For carrying out the porting from CUDA 9 to CUDA 11 on a 2 GPUs virtual machine, we created switched to AD2 and created a new boot volume. We changed the version of CUDA by simply changing the CUDA directory in the makefile, from: <br />
+For carrying out the porting from CUDA 9 to CUDA 11 on a 2 GPUs virtual machine, we switched to AD2 and created a new boot volume. We changed the version of CUDA by simply changing the CUDA directory in the makefile, from: <br />
 ```CUDA_DIR = /usr/local/cuda-9.1/```<br />
 To:<br />
 ```CUDA_DIR = /usr/local/cuda-11.7/``` <br />
