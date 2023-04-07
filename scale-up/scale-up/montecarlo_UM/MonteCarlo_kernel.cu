@@ -63,8 +63,8 @@ __device__ inline double endCallValue(double S, double X, double r, double MuByT
 static __global__ void MonteCarloOneBlockPerOption(
     curandState *__restrict rngStates,
     // TODO: rename, removing d
-    const __TOptionData *__restrict d_OptionData,
-    __TOptionValue *__restrict d_CallValue,
+    const __TOptionData *__restrict optionData,
+    __TOptionValue *__restrict callValue,
     int pathN,
     int optionN)
 {
@@ -79,10 +79,10 @@ static __global__ void MonteCarloOneBlockPerOption(
     curandState localState = rngStates[tid];
     for (int optionIndex = blockIdx.x; optionIndex < optionN; optionIndex += gridDim.x)
     {
-        const real S = d_OptionData[optionIndex].S;
-        const real X = d_OptionData[optionIndex].X;
-        const real MuByT = d_OptionData[optionIndex].MuByT;
-        const real VBySqrtT = d_OptionData[optionIndex].VBySqrtT;
+        const real S = optionData[optionIndex].S;
+        const real X = optionData[optionIndex].X;
+        const real MuByT = optionData[optionIndex].MuByT;
+        const real VBySqrtT = optionData[optionIndex].VBySqrtT;
 
         // Cycle through the entire samples array:
         // derive end stock price for each path
@@ -111,7 +111,7 @@ static __global__ void MonteCarloOneBlockPerOption(
         if (threadIdx.x == 0)
         {
             __TOptionValue t = {s_SumCall[0], s_Sum2Call[0]};
-            d_CallValue[optionIndex] = t;
+            callValue[optionIndex] = t;
         }
     }
 }
@@ -135,9 +135,7 @@ extern "C" void initMonteCarloGPU(TOptionPlan *plan)
 {
     checkCudaErrors(cudaMallocManaged(&plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount)));
     checkCudaErrors(cudaMallocManaged(&plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount)));
-    // checkCudaErrors(cudaMallocHost(&plan->h_OptionData, sizeof(__TOptionData)*(plan->optionCount)));
     // Allocate internal device memory
-    // checkCudaErrors(cudaMallocHost(&plan->h_CallValue, sizeof(__TOptionValue)*(plan->optionCount)));
     // Allocate states for pseudo random number generators
     checkCudaErrors(cudaMallocManaged((void **)&plan->rngStates,
                                       plan->gridSize * THREAD_N * sizeof(curandState)));
@@ -172,7 +170,6 @@ extern "C" void closeMonteCarloGPU(TOptionPlan *plan)
 // Main computations
 extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
 {
-    __TOptionValue *callValue = plan->um_CallValue;
 
     if (plan->optionCount <= 0 || plan->optionCount > MAX_OPTIONS)
     {
@@ -195,13 +192,6 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         optionData[i].VBySqrtT = (real)VBySqrtT;
     }
 
-    /*checkCudaErrors(cudaMemcpyAsync(
-        plan->d_OptionData,
-        h_OptionData,
-        plan->optionCount * sizeof(__TOptionData),
-        cudaMemcpyHostToDevice, stream));
-    */
-
     MonteCarloOneBlockPerOption<<<plan->gridSize, THREAD_N, 0, stream>>>(
         plan->rngStates,
         (__TOptionData *)(plan->um_OptionData),
@@ -209,11 +199,4 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         plan->pathN,
         plan->optionCount);
     getLastCudaError("MonteCarloOneBlockPerOption() execution failed\n");
-
-    /*checkCudaErrors(cudaMemcpyAsync(
-        h_CallValue,
-        plan->d_CallValue,
-        plan->optionCount * sizeof(__TOptionValue), cudaMemcpyDeviceToHost, stream));
-    */
-    // cudaDeviceSynchronize();
 }

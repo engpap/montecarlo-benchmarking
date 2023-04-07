@@ -23,7 +23,7 @@ schms = ["scale-up"]
 
 apps = []
 #============================== APP =================================
-montercarlo = ["montecarlo", "MTC"]
+montercarlo = ["montecarlo_UM", "MTC"]
 
 apps.append(montercarlo)
 #====================================================================

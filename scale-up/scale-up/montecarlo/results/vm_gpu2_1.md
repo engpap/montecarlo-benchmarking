@@ -54,7 +54,7 @@ So, we passed from: <br />
 To:<br />
 ```NVCC_LIB = -lcuda -lmpich -lmpl``` <br />
 
-By doing these steps, we were able to execute <em>run_scale_up.py</em>. We obtained this output:
+By doing these steps, we were able to execute <em>run_scale_up.py</em>. We obtained this output: <br>
 ```
 MonteCarlo_gold.cpp multithreading.cpp -o MonteCarlo
 $Run montecarlo:/usr/bin/time -f '%e' ./run_1g_strong.sh
