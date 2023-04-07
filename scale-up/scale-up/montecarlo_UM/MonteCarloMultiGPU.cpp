@@ -15,8 +15,6 @@
  * See supplied whitepaper for more explanations.
  */
 
-
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -52,16 +50,15 @@ int adjustProblemSize(int GPU_N, int default_nOptions)
     int nOptions = default_nOptions;
 
     // select problem size
-    for (int i=0; i<GPU_N; i++)
+    for (int i = 0; i < GPU_N; i++)
     {
         cudaDeviceProp deviceProp;
         checkCudaErrors(cudaGetDeviceProperties(&deviceProp, i));
-        int cudaCores = _ConvertSMVer2Cores(deviceProp.major, deviceProp.minor)
-                        * deviceProp.multiProcessorCount;
+        int cudaCores = _ConvertSMVer2Cores(deviceProp.major, deviceProp.minor) * deviceProp.multiProcessorCount;
 
         if (cudaCores <= 32)
         {
-            nOptions = (nOptions < cudaCores/2 ? nOptions : cudaCores/2);
+            nOptions = (nOptions < cudaCores / 2 ? nOptions : cudaCores / 2);
         }
     }
 
@@ -80,34 +77,31 @@ int adjustGridSize(int GPUIndex, int defaultGridSize)
 // CPU reference functions
 ///////////////////////////////////////////////////////////////////////////////
 extern "C" void MonteCarloCPU(
-    TOptionValue   &callValue,
+    TOptionValue &callValue,
     TOptionData optionData,
     float *h_Random,
-    int pathN
-);
+    int pathN);
 
-//Black-Scholes formula for call options
+// Black-Scholes formula for call options
 extern "C" void BlackScholesCall(
     float &CallResult,
-    TOptionData optionData
-);
-
+    TOptionData optionData);
 
 ////////////////////////////////////////////////////////////////////////////////
 // GPU-driving host thread
 ////////////////////////////////////////////////////////////////////////////////
-//Timer
+// Timer
 StopWatchInterface **hTimer = NULL;
 
 static CUT_THREADPROC solverThread(TOptionPlan *plan)
 {
-    //Init GPU
+    // Init GPU
     checkCudaErrors(cudaSetDevice(plan->device));
 
     cudaDeviceProp deviceProp;
     checkCudaErrors(cudaGetDeviceProperties(&deviceProp, plan->device));
 
-    //Start the timer
+    // Start the timer
     sdkStartTimer(&hTimer[plan->device]);
 
     // Allocate intermediate memory for MC integrator and initialize
@@ -119,10 +113,10 @@ static CUT_THREADPROC solverThread(TOptionPlan *plan)
 
     checkCudaErrors(cudaDeviceSynchronize());
 
-    //Stop the timer
+    // Stop the timer
     sdkStopTimer(&hTimer[plan->device]);
 
-    //Shut down this GPU
+    // Shut down this GPU
     closeMonteCarloGPU(plan);
 
     cudaStreamSynchronize(0);
@@ -136,7 +130,7 @@ static void multiSolver(TOptionPlan *plan, int nPlans)
 {
 
     // allocate and initialize an array of stream handles
-    cudaStream_t *streams = (cudaStream_t *) malloc(nPlans * sizeof(cudaStream_t));
+    cudaStream_t *streams = (cudaStream_t *)malloc(nPlans * sizeof(cudaStream_t));
     cudaEvent_t *events = (cudaEvent_t *)malloc(nPlans * sizeof(cudaEvent_t));
 
     for (int i = 0; i < nPlans; i++)
@@ -146,11 +140,11 @@ static void multiSolver(TOptionPlan *plan, int nPlans)
         checkCudaErrors(cudaEventCreate(&(events[i])));
     }
 
-    //Init Each GPU
-    // In CUDA 4.0 we can call cudaSetDevice multiple times to target each device
-    // Set the device desired, then perform initializations on that device
+    // Init Each GPU
+    //  In CUDA 4.0 we can call cudaSetDevice multiple times to target each device
+    //  Set the device desired, then perform initializations on that device
 
-    for (int i=0 ; i<nPlans ; i++)
+    for (int i = 0; i < nPlans; i++)
     {
         // set the target device to perform initialization on
         checkCudaErrors(cudaSetDevice(plan[i].device));
@@ -163,36 +157,36 @@ static void multiSolver(TOptionPlan *plan, int nPlans)
         initMonteCarloGPU(&plan[i]);
     }
 
-    for (int i=0 ; i<nPlans ; i++)
+    for (int i = 0; i < nPlans; i++)
     {
         checkCudaErrors(cudaSetDevice(plan[i].device));
         checkCudaErrors(cudaDeviceSynchronize());
     }
 
-    //Start the timer
+    // Start the timer
     sdkResetTimer(&hTimer[0]);
     sdkStartTimer(&hTimer[0]);
 
-    for (int i=0; i<nPlans; i++)
+    for (int i = 0; i < nPlans; i++)
     {
         checkCudaErrors(cudaSetDevice(plan[i].device));
 
-        //Main computations
+        // Main computations
         MonteCarloGPU(&plan[i], streams[i]);
 
         checkCudaErrors(cudaEventRecord(events[i], streams[i]));
     }
 
-    for (int i=0; i<nPlans; i++)
+    for (int i = 0; i < nPlans; i++)
     {
         checkCudaErrors(cudaSetDevice(plan[i].device));
         cudaEventSynchronize(events[i]);
     }
 
-    //Stop the timer
+    // Stop the timer
     sdkStopTimer(&hTimer[0]);
 
-    for (int i=0 ; i<nPlans ; i++)
+    for (int i = 0; i < nPlans; i++)
     {
         checkCudaErrors(cudaSetDevice(plan[i].device));
         closeMonteCarloGPU(&plan[i]);
@@ -200,8 +194,6 @@ static void multiSolver(TOptionPlan *plan, int nPlans)
         checkCudaErrors(cudaEventDestroy(events[i]));
     }
 }
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Main program
@@ -212,7 +204,6 @@ static void multiSolver(TOptionPlan *plan, int nPlans)
 #define PRINT_RESULTS
 #undef PRINT_RESULTS
 
-
 void usage()
 {
     printf("--method=[threaded,streamed] --scaling=[strong,weak] [--help]\n");
@@ -221,7 +212,6 @@ void usage()
     printf("Scaling=strong : constant problem size\n");
     printf("        weak   : problem size scales with number of available GPUs [default]\n");
 }
-
 
 int main(int argc, char **argv)
 {
@@ -288,8 +278,7 @@ int main(int argc, char **argv)
         }
     }
 
-
-    //GPU number present in the system
+    // GPU number present in the system
     int GPU_N;
     checkCudaErrors(cudaGetDeviceCount(&GPU_N));
     int nOptions = 1024 * 1024;
@@ -302,23 +291,23 @@ int main(int argc, char **argv)
     int PATH_N = 262144;
 
     // initialize the timers
-    hTimer = new StopWatchInterface*[GPU_N];
+    hTimer = new StopWatchInterface *[GPU_N];
 
-    for (int i=0; i<GPU_N; i++)
+    for (int i = 0; i < GPU_N; i++)
     {
         sdkCreateTimer(&hTimer[i]);
         sdkResetTimer(&hTimer[i]);
     }
 
-    //Input data array
-    TOptionData  *optionData   = new TOptionData[OPT_N];
-    //Final GPU MC results
+    // Input data array
+    TOptionData *optionData = new TOptionData[OPT_N];
+    // Final GPU MC results
     TOptionValue *callValueGPU = new TOptionValue[OPT_N];
     //"Theoretical" call values by Black-Scholes formula
     float *callValueBS = new float[OPT_N];
-    //Solver config
+    // Solver config
     TOptionPlan *optionSolver = new TOptionPlan[GPU_N];
-    //OS thread ID
+    // OS thread ID
     CUTThread *threadID = new CUTThread[GPU_N];
 
     int gpuBase, gpuIndex;
@@ -331,58 +320,55 @@ int main(int argc, char **argv)
     printf("MonteCarloMultiGPU\n");
     printf("==================\n");
     printf("Parallelization method  = %s\n", use_threads ? "threaded" : "streamed");
-    printf("Problem scaling         = %s\n", strongScaling? "strong" : "weak");
+    printf("Problem scaling         = %s\n", strongScaling ? "strong" : "weak");
     printf("Number of GPUs          = %d\n", GPU_N);
     printf("Total number of options = %d\n", OPT_N);
     printf("Number of paths         = %d\n", PATH_N);
 
-
     printf("main(): generating input data...\n");
     srand(123);
 
-    for (i=0; i < OPT_N; i++)
+    for (i = 0; i < OPT_N; i++)
     {
         optionData[i].S = randFloat(5.0f, 50.0f);
         optionData[i].X = randFloat(10.0f, 25.0f);
         optionData[i].T = randFloat(1.0f, 5.0f);
         optionData[i].R = 0.06f;
         optionData[i].V = 0.10f;
-        callValueGPU[i].Expected   = -1.0f;
+        callValueGPU[i].Expected = -1.0f;
         callValueGPU[i].Confidence = -1.0f;
     }
 
     printf("main(): starting %i host threads...\n", GPU_N);
 
-
-    //Get option count for each GPU
+    // Get option count for each GPU
     for (i = 0; i < GPU_N; i++)
     {
         optionSolver[i].optionCount = OPT_N / GPU_N;
     }
 
-    //Take into account cases with "odd" option counts
+    // Take into account cases with "odd" option counts
     for (i = 0; i < (OPT_N % GPU_N); i++)
     {
         optionSolver[i].optionCount++;
     }
 
-    //Assign GPU option ranges
+    // Assign GPU option ranges
     gpuBase = 0;
 
     for (i = 0; i < GPU_N; i++)
     {
-        optionSolver[i].device     = i;
-        optionSolver[i].optionData = optionData   + gpuBase;
-        optionSolver[i].callValue  = callValueGPU + gpuBase;
-        optionSolver[i].pathN      = PATH_N;
-        optionSolver[i].gridSize   = adjustGridSize(optionSolver[i].device, optionSolver[i].optionCount);
+        optionSolver[i].device = i;
+        optionSolver[i].optionData = optionData + gpuBase;
+        optionSolver[i].callValue = callValueGPU + gpuBase;
+        optionSolver[i].pathN = PATH_N;
+        optionSolver[i].gridSize = adjustGridSize(optionSolver[i].device, optionSolver[i].optionCount);
         gpuBase += optionSolver[i].optionCount;
     }
 
-
     if (use_threads || bqatest)
     {
-        //Start CPU thread for each GPU
+        // Start CPU thread for each GPU
         for (gpuIndex = 0; gpuIndex < GPU_N; gpuIndex++)
         {
             threadID[gpuIndex] = cutStartThread((CUT_THREADROUTINE)solverThread, &optionSolver[gpuIndex]);
@@ -406,17 +392,17 @@ int main(int argc, char **argv)
         }
 
         printf("main(): comparing Monte Carlo and Black-Scholes results...\n");
-        sumDelta   = 0;
-        sumRef     = 0;
+        sumDelta = 0;
+        sumRef = 0;
         sumReserve = 0;
 
         for (i = 0; i < OPT_N; i++)
         {
             BlackScholesCall(callValueBS[i], optionData[i]);
-            delta     = fabs(callValueBS[i] - callValueGPU[i].Expected);
-            ref       = callValueBS[i];
+            delta = fabs(callValueBS[i] - callValueGPU[i].Expected);
+            ref = callValueBS[i];
             sumDelta += delta;
-            sumRef   += fabs(ref);
+            sumRef += fabs(ref);
 
             if (delta > 1e-6)
             {
@@ -426,7 +412,6 @@ int main(int argc, char **argv)
 #ifdef PRINT_RESULTS
             printf("BS: %f; delta: %E\n", callValueBS[i], delta);
 #endif
-
         }
 
         sumReserve /= OPT_N;
@@ -453,17 +438,17 @@ int main(int argc, char **argv)
         printf("Options per sec.: %f\n", OPT_N / (time * 0.001));
 
         printf("main(): comparing Monte Carlo and Black-Scholes results...\n");
-        sumDelta   = 0;
-        sumRef     = 0;
+        sumDelta = 0;
+        sumRef = 0;
         sumReserve = 0;
 
         for (i = 0; i < OPT_N; i++)
         {
             BlackScholesCall(callValueBS[i], optionData[i]);
-            delta     = fabs(callValueBS[i] - callValueGPU[i].Expected);
-            ref       = callValueBS[i];
+            delta = fabs(callValueBS[i] - callValueGPU[i].Expected);
+            ref = callValueBS[i];
             sumDelta += delta;
-            sumRef   += fabs(ref);
+            sumRef += fabs(ref);
 
             if (delta > 1e-6)
             {
@@ -482,7 +467,7 @@ int main(int argc, char **argv)
     printf("main(): running CPU MonteCarlo...\n");
     TOptionValue callValueCPU;
     sumDelta = 0;
-    sumRef   = 0;
+    sumRef = 0;
 
     for (i = 0; i < OPT_N; i++)
     {
@@ -490,13 +475,12 @@ int main(int argc, char **argv)
             callValueCPU,
             optionData[i],
             NULL,
-            PATH_N
-        );
-        delta     = fabs(callValueCPU.Expected - callValueGPU[i].Expected);
-        ref       = callValueCPU.Expected;
+            PATH_N);
+        delta = fabs(callValueCPU.Expected - callValueGPU[i].Expected);
+        ref = callValueCPU.Expected;
         sumDelta += delta;
-        sumRef   += fabs(ref);
-        printf("Exp : %f | %f\t", callValueCPU.Expected,   callValueGPU[i].Expected);
+        sumRef += fabs(ref);
+        printf("Exp : %f | %f\t", callValueCPU.Expected, callValueGPU[i].Expected);
         printf("Conf: %f | %f\n", callValueCPU.Confidence, callValueGPU[i].Confidence);
     }
 
@@ -505,7 +489,7 @@ int main(int argc, char **argv)
 
     printf("Shutting down...\n");
 
-    for (int i=0; i<GPU_N; i++)
+    for (int i = 0; i < GPU_N; i++)
     {
         sdkStartTimer(&hTimer[i]);
         checkCudaErrors(cudaSetDevice(i));
@@ -524,5 +508,5 @@ int main(int argc, char **argv)
     printf("\nNOTE: The CUDA Samples are not meant for performance measurements. Results may vary when GPU Boost is enabled.\n\n");
     printf(sumReserve > 1.0f ? "Test passed\n" : "Test failed!\n");
     return 0;
-    //exit(sumReserve > 1.0f ? EXIT_SUCCESS : EXIT_FAILURE);
+    // exit(sumReserve > 1.0f ? EXIT_SUCCESS : EXIT_FAILURE);
 }

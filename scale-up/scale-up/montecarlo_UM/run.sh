@@ -1,1 +1,1 @@
-./MonteCarlo
+nvprof ./MonteCarlo

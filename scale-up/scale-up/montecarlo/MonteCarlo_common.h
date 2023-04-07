@@ -17,15 +17,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Global types
 ////////////////////////////////////////////////////////////////////////////////
+
+// Holds data for a financial option.
 typedef struct
 {
-    float S;
-    float X;
-    float T;
-    float R;
-    float V;
+    float S; /// stock price
+    float X; /// strike price
+    float T; /// time to expiration 
+    float R; /// risk-free interest rate
+    float V; /// volatility 
 } TOptionData;
 
+/// Holds the expected value and confidence level of an option.
 typedef struct
         //#ifdef __CUDACC__
         //__align__(8)
@@ -35,7 +38,8 @@ typedef struct
     float Confidence;
 } TOptionValue;
 
-//GPU outputs before CPU postprocessing
+// GPU outputs before CPU postprocessing;
+/// Similar to TOptionValue, but with a different precision type.
 typedef struct
 {
     real Expected;
@@ -43,7 +47,7 @@ typedef struct
 } __TOptionValue;
 
 
-
+/// Holds information about a Monte Carlo simulation plan.
 typedef struct
 {
     //Device ID for multi-GPU version
@@ -58,6 +62,10 @@ typedef struct
     //Temporary Host-side pinned memory for async + faster data transfers
     __TOptionValue *h_CallValue;
 
+    
+    /// "device-side" refers to data that is stored and processed on the GPU,
+    /// while "host-side" refers to data that is stored and processed on the CPU.
+
     // Device- and host-side option data
     void * d_OptionData;
     void * h_OptionData;
@@ -66,7 +74,7 @@ typedef struct
     void * d_CallValue;
 
     //Intermediate device-side buffers
-    void *d_Buffer;
+    void *d_Buffer;    
 
     //random number generator states
     curandState *rngStates;
@@ -82,7 +90,12 @@ typedef struct
 
 
 extern "C" void initMonteCarloGPU(TOptionPlan *plan);
+
+// It performs the Monte Carlo simulation on the GPU.
+// A stream is a sequence of operations that are performed in order on the device.
+// Streams allows independent concurrent in-order queues of execution.
 extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream=0);
+
 extern "C" void closeMonteCarloGPU(TOptionPlan *plan);
 
 #endif
