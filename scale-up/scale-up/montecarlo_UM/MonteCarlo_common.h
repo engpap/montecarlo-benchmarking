@@ -49,19 +49,11 @@ typedef struct
     // Option count for this plan
     int optionCount;
 
-    // Host-side data source and result destination
     TOptionData *optionData;
     TOptionValue *callValue;
 
-    // Temporary Host-side pinned memory for async + faster data transfers
     __TOptionValue *um_CallValue;
-
-    // Device- and host-side option data
-    // void *d_OptionData;
-    void *um_OptionData;
-
-    // Device-side option values
-    // void *um_CallValue;
+    void *um_OptionData; //  can remove by substituting with optionData
 
     // Intermediate device-side buffers
     void *d_Buffer;
