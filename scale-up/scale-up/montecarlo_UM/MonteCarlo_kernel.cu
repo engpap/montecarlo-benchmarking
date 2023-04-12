@@ -62,7 +62,6 @@ __device__ inline double endCallValue(double S, double X, double r, double MuByT
 ////////////////////////////////////////////////////////////////////////////////
 static __global__ void MonteCarloOneBlockPerOption(
     curandState *__restrict rngStates,
-    // TODO: rename, removing d
     const __TOptionData *__restrict optionData,
     __TOptionValue *__restrict callValue,
     int pathN,

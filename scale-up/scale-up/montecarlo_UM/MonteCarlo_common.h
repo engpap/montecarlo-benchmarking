@@ -49,12 +49,16 @@ typedef struct
     // Option count for this plan
     int optionCount;
 
+    // Host-side data source and result destination
     TOptionData *optionData;
     TOptionValue *callValue;
 
+    // Unified Memory option values
     __TOptionValue *um_CallValue;
-    void *um_OptionData; //  can remove by substituting with optionData
 
+    // Unified Memory option data
+    void *um_OptionData;
+    
     // Intermediate device-side buffers
     void *d_Buffer;
 

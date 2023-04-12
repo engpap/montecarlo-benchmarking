@@ -47,7 +47,10 @@ typedef struct
 } __TOptionValue;
 
 
+
 /// Holds information about a Monte Carlo simulation plan.
+/// "device-side" refers to data that is stored and processed on the GPU,
+/// while "host-side" refers to data that is stored and processed on the CPU.
 typedef struct
 {
     //Device ID for multi-GPU version
@@ -61,10 +64,6 @@ typedef struct
 
     //Temporary Host-side pinned memory for async + faster data transfers
     __TOptionValue *h_CallValue;
-
-    
-    /// "device-side" refers to data that is stored and processed on the GPU,
-    /// while "host-side" refers to data that is stored and processed on the CPU.
 
     // Device- and host-side option data
     void * d_OptionData;
