@@ -5,10 +5,10 @@ To port the code written in CUDA 11 to Unified Memory, we  had to make changes t
 This simplifies the programming model, as we don't have to explicitly manage the memory allocation and data transfer between CPU and GPU.
 Thus, we firstly modified the MonteCarlo_common.h file by removing variables related to the concept of device (GPU) and host (CPU) inside the plan data structure.
 
-Firstly, we modified the data structure TOptionPlan inside MonteCarlo_common.h file. From this:<br/>
+Firstly, we modified the data structure TOptionPlan inside MonteCarlo_common.h file.
+<br/>CUDA:<br/>
 ![alt text](https://github.com/engpap/montecarlo-benchmarking/blob/porting-um/scale-up/scale-up/report/assets/common_cuda.png?raw=true)
-
-We obtained the following:<br/>
+<br/>UM:<br/>
 ![alt text](https://github.com/engpap/montecarlo-benchmarking/blob/porting-um/scale-up/scale-up/report/assets/common_um.png?raw=true)
 
  The first code block contains pointers to both host and device memory, along with temporary host-side pinned memory for asynchronous and faster data transfers. In contrast, the second code block employs the use of Unified Memory (UM), which simplifies memory management by automatically migrating data between host and device memory as necessary.
@@ -22,16 +22,18 @@ We removed the cudaMalloc and cudaMallocHost from CUDA code and replaced them wi
 The reason why we did this is because cudaMalloc allocates memory on the GPU device and cudaMallocHost function is used to allocate memory on the CPU host, but we are dealing with the concept of Unified Memory. Using cudaMallocManaged simplifies the memory management in CUDA programs and eliminate the need to manually copy data between the CPU and GPU. This allows a programmer to allocate memory that can be accessed by both the CPU and GPU.
 
 Below snippets of the code are reported.
+<br/>CUDA:<br/>
 ![alt text](https://github.com/engpap/montecarlo-benchmarking/blob/porting-um/scale-up/scale-up/report/assets/initMonteCarloGPU_cuda.png?raw=true)
+<br/>UM:<br/>
 ![alt text](https://github.com/engpap/montecarlo-benchmarking/blob/porting-um/scale-up/scale-up/report/assets/initMonteCarloGPU_um.png?raw=true)
 
 Notice that option data and call value variables are changed accordingly. There are no longer two different variables for each value (one for host and one for device), but a single UM variable.
 
 In the same fashion, we modified the closeMonteCarloGPU function.
 Below snippets of the code are reported.
-CUDA:<br/>
+<br/>CUDA:<br/>
 ![alt text](https://github.com/engpap/montecarlo-benchmarking/blob/porting-um/scale-up/scale-up/report/assets/closeMonteCarloGPU_cuda.png?raw=true)
-UM:<br/>
+<br/>UM:<br/>
 ![alt text](https://github.com/engpap/montecarlo-benchmarking/blob/porting-um/scale-up/scale-up/report/assets/closeMonteCarloGPU_um.png?raw=true)
 
 
@@ -40,9 +42,9 @@ This process can be semplified by the introduction of UM: calls to cudaMemcpyAsy
 This function copies data between host and device, thus it is not no longer necessary. By removing it, the having two distinct variables for both the call value and the option data turned out to be useless. Thus, we modified the code and used only um_CallValue and um_OptionData.
 
 Below snippets of the code are reported.
-CUDA:<br/>
+<br/>CUDA:<br/>
 ![alt text](https://github.com/engpap/montecarlo-benchmarking/blob/porting-um/scale-up/scale-up/report/assets/MonteCarloGPU_cuda.png?raw=true)
-UM:<br/>
+<br/>UM:<br/>
 ![alt text](https://github.com/engpap/montecarlo-benchmarking/blob/porting-um/scale-up/scale-up/report/assets/MonteCarloGPU_um.png?raw=true)
 
 
