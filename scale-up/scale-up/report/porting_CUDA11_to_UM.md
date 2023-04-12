@@ -5,10 +5,10 @@ To port the code written in CUDA 11 to Unified Memory, we  had to make changes t
 This simplifies the programming model, as we don't have to explicitly manage the memory allocation and data transfer between CPU and GPU.
 Thus, we firstly modified the MonteCarlo_common.h file by removing variables related to the concept of device (GPU) and host (CPU) inside the plan data structure.
 
-Firstly, we modified the data structure TOptionPlan inside MonteCarlo_common.h file. From this:
+Firstly, we modified the data structure TOptionPlan inside MonteCarlo_common.h file. From this:<br/>
 ![alt text](https://github.com/engpap/montecarlo-benchmarking/blob/porting-um/scale-up/scale-up/report/assets/common_cuda.png?raw=true)
 
-We obtained the following:
+We obtained the following:<br/>
 ![alt text](https://github.com/engpap/montecarlo-benchmarking/blob/porting-um/scale-up/scale-up/report/assets/common_um.png?raw=true)
 
  The first code block contains pointers to both host and device memory, along with temporary host-side pinned memory for asynchronous and faster data transfers. In contrast, the second code block employs the use of Unified Memory (UM), which simplifies memory management by automatically migrating data between host and device memory as necessary.
@@ -29,7 +29,9 @@ Notice that option data and call value variables are changed accordingly. There 
 
 In the same fashion, we modified the closeMonteCarloGPU function.
 Below snippets of the code are reported.
+CUDA:<br/>
 ![alt text](https://github.com/engpap/montecarlo-benchmarking/blob/porting-um/scale-up/scale-up/report/assets/closeMonteCarloGPU_cuda.png?raw=true)
+UM:<br/>
 ![alt text](https://github.com/engpap/montecarlo-benchmarking/blob/porting-um/scale-up/scale-up/report/assets/closeMonteCarloGPU_um.png?raw=true)
 
 
@@ -38,7 +40,9 @@ This process can be semplified by the introduction of UM: calls to cudaMemcpyAsy
 This function copies data between host and device, thus it is not no longer necessary. By removing it, the having two distinct variables for both the call value and the option data turned out to be useless. Thus, we modified the code and used only um_CallValue and um_OptionData.
 
 Below snippets of the code are reported.
+CUDA:<br/>
 ![alt text](https://github.com/engpap/montecarlo-benchmarking/blob/porting-um/scale-up/scale-up/report/assets/MonteCarloGPU_cuda.png?raw=true)
+UM:<br/>
 ![alt text](https://github.com/engpap/montecarlo-benchmarking/blob/porting-um/scale-up/scale-up/report/assets/MonteCarloGPU_um.png?raw=true)
 
 
