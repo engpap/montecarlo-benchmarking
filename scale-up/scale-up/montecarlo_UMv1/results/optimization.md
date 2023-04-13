@@ -114,7 +114,8 @@ Total CPU Page faults: 72
 The main difference between the profiling outputs of the non-optimized version and this one is the number and size of the host to device memory transfers, with the first output having more transfers but smaller sizes, and the second output having fewer transfers but larger sizes. 
 Furthermore, in this output we can observe zero GPU page fault groups compated to hundreds in the non-optimized output. This proves reduction of GPU page fault groups. <br>
 
-Secondly, by running:
+# More outputs
+By running:
 ```
 ./run_1g_strong.sh
 ```
@@ -152,7 +153,7 @@ NOTE: The CUDA Samples are not meant for performance measurements. Results may v
 Test passed
 ```
 
-Thirdly, by running:
+While, by running:
 ```
 ./run_1g_weak.sh
 ```
