@@ -7,30 +7,19 @@ from collections import defaultdict
 barWidth = 0.3
 
 data = defaultdict(list)
+GPUs = set()
 
-'''
-# need to check on vm actual output file name
-GPUs = ['1', '2', '4']
-scaling = ['strong', 'weak']
 
-# export data from results folder
-for g in GPUs:
-    for s in scaling:
-        # open file and save data in relative list
-        cur_path = os.path.dirname(__file__)
+# open file and save data in dictionary
+cur_path = os.path.dirname(__file__)
 
-        f = open(os.path.dirname(__file__) + '/../results/res' + g + 'g_' + s + '.txt')
-
-        line = f.readline()
-
+with open(os.path.dirname(__file__) + '/../../result/res_scale-up.txt') as f:
+    for line in f:
         line = line.split(',')
+        data[line[2]].append(float(line[-1][:-2]))    
+        GPUs.add(line[3])
 
-        data[s].append(line[-1])
-
-'''
-# initialize data (hardcoded for now)
-data['strong'] = [1061.562012, 545.804016, 0]
-data['weak'] = [1051.198975, 1061.215942, 0]
+GPUs = list(GPUs)
 
 strong = data['strong']
 weak = data['weak']
@@ -75,7 +64,7 @@ ax.set_ylabel("Normalized Latency", fontweight ='bold', fontsize = 10)
 plt.title("Normalized Latency Reduction", fontweight ='bold', fontsize = 15)
 
 # set xticks and yticks
-ax.set_xticks([r + barWidth/2 for r in range(len(strong))], ['1', '2', '4'])
+ax.set_xticks([r + barWidth/2 for r in range(len(strong))], GPUs)
 ax.set_yticks(np.arange(0, 2.1, 0.5))
 
 # create horizontal dotted lines for better comparison
@@ -89,6 +78,6 @@ ax.margins(y=0.05)
 ax.legend(loc='upper right')
 
 # show plot
-plt.show()
+#plt.show()
 
 # save plot?

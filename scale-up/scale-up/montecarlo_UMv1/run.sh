@@ -1,0 +1,1 @@
+nvprof ./MonteCarlo
