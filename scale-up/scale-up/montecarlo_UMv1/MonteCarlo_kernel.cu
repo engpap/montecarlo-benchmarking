@@ -138,6 +138,9 @@ extern "C" void initMonteCarloGPU(TOptionPlan *plan)
     // Allocate states for pseudo random number generators
     checkCudaErrors(cudaMallocManaged((void **)&plan->rngStates,
                                       plan->gridSize * THREAD_N * sizeof(curandState)));
+                                      
+    // Prefetch rngStates to the device.
+    checkCudaErrors(cudaMemPrefetchAsync(plan->rngStates, plan->gridSize * THREAD_N * sizeof(curandState), plan->device));
 
     // place each device pathN random numbers apart on the random number sequence
     rngSetupStates<<<plan->gridSize, THREAD_N>>>(plan->rngStates, plan->device);
@@ -191,6 +194,10 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         optionData[i].VBySqrtT = (real)VBySqrtT;
     }
 
+    // Prefetch the data to the device (GPU) memory 
+    checkCudaErrors(cudaMemPrefetchAsync((__TOptionData *)(plan->um_OptionData), plan->optionCount * sizeof(__TOptionData), plan->device, stream));
+    checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), plan->device, stream));
+
     MonteCarloOneBlockPerOption<<<plan->gridSize, THREAD_N, 0, stream>>>(
         plan->rngStates,
         (__TOptionData *)(plan->um_OptionData),
@@ -199,3 +206,4 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         plan->optionCount);
     getLastCudaError("MonteCarloOneBlockPerOption() execution failed\n");
 }
+

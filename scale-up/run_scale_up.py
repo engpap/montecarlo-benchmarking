@@ -23,7 +23,7 @@ schms = ["scale-up"]
 
 apps = []
 #============================== APP =================================
-montercarlo = ["montecarlo_UM", "MTC"]
+montercarlo = ["montecarlo_UMv1", "MTC"]
 
 apps.append(montercarlo)
 #====================================================================
@@ -47,7 +47,7 @@ def run_one_app(app, outfile, schm):
                 time += float(subprocess.getoutput(cmd).split('\n')[-1])
             time /= TIMES
             # Format output line with schema, app name, scale, GPU, and execution time in milliseconds
-            line = str(schm) + "," + str(app[1]) + "," + str(s) + "," + str(g) + "," + str(time*1000) + 'ms'
+            line = str(schm) + "," + str(app[1]) + "," + str(s) + "," + str(g) + "," + str(time*1000)
             print(line)
             outfile.write(line + "\n")
 
