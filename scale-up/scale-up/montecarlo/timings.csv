@@ -1,0 +1,4 @@
+Parallelization_method,Problem_scaling,Number_of_GPUs,Total_number_of_options,Number_of_paths
+threaded,strong,1,104857,262144,0.124152,0.288524
+threaded,strong,1,104857,262144,0.11755,0.296083
+threaded,strong,1,104857,262144,0.119018,0.293434

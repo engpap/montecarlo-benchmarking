@@ -104,8 +104,11 @@ StopWatchInterface **hTimer = NULL;
 #include <chrono>
 #include <iostream>
 
+float duration_init;
+float duration_mc;
+
 static CUT_THREADPROC solverThread(TOptionPlan *plan)
-{
+{   
     //Init GPU
     checkCudaErrors(cudaSetDevice(plan->device));
 
@@ -134,15 +137,13 @@ static CUT_THREADPROC solverThread(TOptionPlan *plan)
 
     checkCudaErrors(cudaDeviceSynchronize());
 
-    // WARNING: Following 5 lines of code has been inserted by @engpap
+    // WARNING: Following 3 lines of code has been inserted by @engpap
     // Record MC time
     auto end_mc = std::chrono::high_resolution_clock::now();
 
     // Print timing results
-    auto duration_init = std::chrono::duration_cast<std::chrono::duration<double>>(end_init - start_init).count();
-    auto duration_mc = std::chrono::duration_cast<std::chrono::duration<double>>(end_mc - start_mc).count();
-    std::cout << ">>> Inside solverThread, initMonteCarloGPU took " << duration_init * 1000.0 << " milliseconds" << std::endl;
-    std::cout << ">>> Inside solverThread, MonteCarloGPU took " << duration_mc * 1000.0 << " milliseconds" << std::endl;
+    duration_init = std::chrono::duration_cast<std::chrono::duration<double>>(end_init - start_init).count();
+    duration_mc = std::chrono::duration_cast<std::chrono::duration<double>>(end_mc - start_mc).count();
 
     //Stop the timer
     sdkStopTimer(&hTimer[plan->device]);
@@ -227,16 +228,13 @@ static void multiSolver(TOptionPlan *plan, int nPlans)
         cudaEventSynchronize(events[i]);
     }
     
-    // WARNING: Following 5 lines of code has been inserted by @engpap
+    // WARNING: Following 3 lines of code has been inserted by @engpap
     // Record MC time
     auto end_mc = std::chrono::high_resolution_clock::now();
 
     // Print timing results
-    auto duration_init = std::chrono::duration_cast<std::chrono::duration<double>>(end_init - start_init).count();
-    auto duration_mc = std::chrono::duration_cast<std::chrono::duration<double>>(end_mc - start_mc).count();
-    std::cout << ">>> Inside multiSolver, initMonteCarloGPU took " << duration_init * 1000.0 << " milliseconds" << std::endl;
-    std::cout << ">>> Inside multiSolver, MonteCarloGPU took " << duration_mc * 1000.0 << " milliseconds" << std::endl;
-
+    duration_init = std::chrono::duration_cast<std::chrono::duration<double>>(end_init - start_init).count();
+    duration_mc = std::chrono::duration_cast<std::chrono::duration<double>>(end_mc - start_mc).count();
 
     //Stop the timer
     sdkStopTimer(&hTimer[0]);
@@ -341,7 +339,7 @@ int main(int argc, char **argv)
     //GPU number present in the system
     int GPU_N;
     checkCudaErrors(cudaGetDeviceCount(&GPU_N));
-    int nOptions = 1024 * 1024 * 10;
+    int nOptions = 1024 * 1024 / 10;
 
     nOptions = adjustProblemSize(GPU_N, nOptions);
 
@@ -572,6 +570,23 @@ int main(int argc, char **argv)
     printf("Average reserve: %f\n", sumReserve);
     printf("\nNOTE: The CUDA Samples are not meant for performance measurements. Results may vary when GPU Boost is enabled.\n\n");
     printf(sumReserve > 1.0f ? "Test passed\n" : "Test failed!\n");
+
+    // -------------------------- Start of code for custom report --------------------------
+    // Print timings to console
+    printf("\n");
+    std::cout << ">>> Inside solverThread, initMonteCarloGPU took " << duration_init * 1000.0 << " milliseconds" << std::endl;
+    std::cout << ">>> Inside solverThread, MonteCarloGPU took " << duration_mc * 1000.0 << " milliseconds" << std::endl;
+
+    // Write timings to CSV file
+    std::ofstream myfile;
+    myfile.open("timings.csv", std::ios_base::app);
+    myfile << (use_threads ? "threaded" : "streamed") << "," << (strongScaling ? "strong" : "weak") << "," << GPU_N << "," << OPT_N << "," << PATH_N << "," << duration_init << "," << duration_mc << "\n";
+    myfile.close();
+
+    // -------------------------- End of code for custom report --------------------------
+
+
     return 0;
     //exit(sumReserve > 1.0f ? EXIT_SUCCESS : EXIT_FAILURE);
+
 }
