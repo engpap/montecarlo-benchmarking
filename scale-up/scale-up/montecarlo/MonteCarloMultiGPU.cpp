@@ -99,6 +99,11 @@ extern "C" void BlackScholesCall(
 //Timer
 StopWatchInterface **hTimer = NULL;
 
+// WARNING: Following 2 lines of code has been inserted by @engpap
+// Includes for utilizing chrono timer
+#include <chrono>
+#include <iostream>
+
 static CUT_THREADPROC solverThread(TOptionPlan *plan)
 {
     //Init GPU
@@ -110,26 +115,34 @@ static CUT_THREADPROC solverThread(TOptionPlan *plan)
     //Start the timer
     sdkStartTimer(&hTimer[plan->device]);
 
+    // WARNING: Following line of code has been inserted by @engpap
+    // Start init timer
+    auto start_init = std::chrono::high_resolution_clock::now();
+
     // Allocate intermediate memory for MC integrator and initialize
     // RNG states
     initMonteCarloGPU(plan);
 
-    // WARNING: Following line of code has been inserted by @engpap
-    printf(">>> Custom init time: %f", sdkGetTimerValue(&hTimer[plan->device]));
-    // WARNING: Following line of code has been inserted by @engpap
-    sdkResetTimer(&hTimer[plan->device]);
-
-    // WARNING: Following line of code has been inserted by @engpap
-    // TODO: Remove
-    printf(">>> Custom check time is smaller than before: %f",sdkGetTimerValue(&hTimer[plan->device]));
-
+    // WARNING: Following 2 lines of code has been inserted by @engpap
+    // Record init time
+    auto end_init = std::chrono::high_resolution_clock::now();
+    // Start MonteCarlo timer
+    auto start_mc = std::chrono::high_resolution_clock::now();
+    
     // Main computation
     MonteCarloGPU(plan);
 
-    // WARNING: Following line of code has been inserted by @engpap
-    printf(">>> Custom exec time: %f",sdkGetTimerValue(&hTimer[plan->device]));
-
     checkCudaErrors(cudaDeviceSynchronize());
+
+    // WARNING: Following 5 lines of code has been inserted by @engpap
+    // Record MC time
+    auto end_mc = std::chrono::high_resolution_clock::now();
+
+    // Print timing results
+    auto duration_init = std::chrono::duration_cast<std::chrono::duration<double>>(end_init - start_init).count();
+    auto duration_mc = std::chrono::duration_cast<std::chrono::duration<double>>(end_mc - start_mc).count();
+    std::cout << ">>> Inside solverThread, initMonteCarloGPU took " << duration_init * 1000.0 << " milliseconds" << std::endl;
+    std::cout << ">>> Inside solverThread, MonteCarloGPU took " << duration_mc * 1000.0 << " milliseconds" << std::endl;
 
     //Stop the timer
     sdkStopTimer(&hTimer[plan->device]);
@@ -162,6 +175,10 @@ static void multiSolver(TOptionPlan *plan, int nPlans)
     // In CUDA 4.0 we can call cudaSetDevice multiple times to target each device
     // Set the device desired, then perform initializations on that device
 
+    // WARNING: Following line of code has been inserted by @engpap
+    // Start init timer
+    auto start_init = std::chrono::high_resolution_clock::now();
+
     for (int i=0 ; i<nPlans ; i++)
     {
         // set the target device to perform initialization on
@@ -180,10 +197,19 @@ static void multiSolver(TOptionPlan *plan, int nPlans)
         checkCudaErrors(cudaSetDevice(plan[i].device));
         checkCudaErrors(cudaDeviceSynchronize());
     }
+    
+    // WARNING: Following line of code has been inserted by @engpap
+    // Record init time
+    auto end_init = std::chrono::high_resolution_clock::now();
+
 
     //Start the timer
     sdkResetTimer(&hTimer[0]);
     sdkStartTimer(&hTimer[0]);
+
+    // WARNING: Following line of code has been inserted by @engpap
+    // Start MonteCarlo timer
+    auto start_mc = std::chrono::high_resolution_clock::now();
 
     for (int i=0; i<nPlans; i++)
     {
@@ -200,6 +226,17 @@ static void multiSolver(TOptionPlan *plan, int nPlans)
         checkCudaErrors(cudaSetDevice(plan[i].device));
         cudaEventSynchronize(events[i]);
     }
+    
+    // WARNING: Following 5 lines of code has been inserted by @engpap
+    // Record MC time
+    auto end_mc = std::chrono::high_resolution_clock::now();
+
+    // Print timing results
+    auto duration_init = std::chrono::duration_cast<std::chrono::duration<double>>(end_init - start_init).count();
+    auto duration_mc = std::chrono::duration_cast<std::chrono::duration<double>>(end_mc - start_mc).count();
+    std::cout << ">>> Inside multiSolver, initMonteCarloGPU took " << duration_init * 1000.0 << " milliseconds" << std::endl;
+    std::cout << ">>> Inside multiSolver, MonteCarloGPU took " << duration_mc * 1000.0 << " milliseconds" << std::endl;
+
 
     //Stop the timer
     sdkStopTimer(&hTimer[0]);
@@ -304,13 +341,13 @@ int main(int argc, char **argv)
     //GPU number present in the system
     int GPU_N;
     checkCudaErrors(cudaGetDeviceCount(&GPU_N));
-    int nOptions = 1024 * 1024;
+    int nOptions = 1024 * 1024 * 10;
 
     nOptions = adjustProblemSize(GPU_N, nOptions);
 
     // select problem size
     int scale = (strongScaling) ? 1 : GPU_N;
-    int OPT_N = nOptions * scale;]
+    int OPT_N = nOptions * scale;
     int PATH_N = 262144;
 
     // initialize the timers
