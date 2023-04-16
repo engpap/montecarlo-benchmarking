@@ -435,9 +435,15 @@ int main(int argc, char **argv)
         gpuBase += optionSolver[i].optionCount;
     }
 
+    // use_threads ? launch solverThread : lauch multiSolver
 
-    if (use_threads || bqatest)
+    if (use_threads || bqatest) // multi GPU calculations with threads
     {
+        /*
+        1. The main function creates a thread for each GPU.
+        2. The code waits for the threads to finish.
+        3. Prints the statistics of the GPU computation.
+        */
         //Start CPU thread for each GPU
         for (gpuIndex = 0; gpuIndex < GPU_N; gpuIndex++)
         {
@@ -488,7 +494,7 @@ int main(int argc, char **argv)
         sumReserve /= OPT_N;
     }
 
-    if (!use_threads || bqatest)
+    if (!use_threads || bqatest) // multi GPU calculations with streams
     {
         multiSolver(optionSolver, GPU_N);
 
