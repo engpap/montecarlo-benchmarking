@@ -1,1 +1,1 @@
-./MonteCarlo
+./MonteCarlo --scaling=strong --method=threaded

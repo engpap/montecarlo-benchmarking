@@ -1,1 +1,1 @@
-nvprof ./MonteCarlo
+./MonteCarlo --method=threaded --scaling=strong
