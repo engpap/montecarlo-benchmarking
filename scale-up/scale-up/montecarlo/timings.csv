@@ -1,4 +1,7 @@
-Parallelization_method,Problem_scaling,Number_of_GPUs,Total_number_of_options,Number_of_paths
-threaded,strong,1,104857,262144,0.124152,0.288524
-threaded,strong,1,104857,262144,0.11755,0.296083
-threaded,strong,1,104857,262144,0.119018,0.293434
+Parallelization_method,Problem_scaling,Number_of_GPUs,Total_number_of_options,Number_of_paths,Init_time_ms,Execution_time_ms
+threaded,strong,1,104857,262144,120.992,295.978
+threaded,strong,1,104857,262144,121.428,283.183
+threaded,strong,1,104857,262144,125.856,284.541
+threaded,strong,1,104857,262144,118.451,273.892
+threaded,strong,1,104857,262144,118.246,274.326
+threaded,strong,1,104857,262144,118.941,274.215

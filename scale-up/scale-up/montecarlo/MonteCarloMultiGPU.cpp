@@ -580,7 +580,7 @@ int main(int argc, char **argv)
     // Write timings to CSV file
     std::ofstream myfile;
     myfile.open("timings.csv", std::ios_base::app);
-    myfile << (use_threads ? "threaded" : "streamed") << "," << (strongScaling ? "strong" : "weak") << "," << GPU_N << "," << OPT_N << "," << PATH_N << "," << duration_init << "," << duration_mc << "\n";
+    myfile << (use_threads ? "threaded" : "streamed") << "," << (strongScaling ? "strong" : "weak") << "," << GPU_N << "," << OPT_N << "," << PATH_N << "," << duration_init * 1000.0 << "," << duration_mc * 1000.0 << "\n";
     myfile.close();
 
     // -------------------------- End of code for custom report --------------------------
