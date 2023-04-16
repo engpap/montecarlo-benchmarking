@@ -278,32 +278,39 @@ int main(int argc, char **argv)
     bool bqatest = false;
     bool strongScaling = false;
 
+    // Set pointers to argc and argv
     pArgc = &argc;
     pArgv = argv;
 
+    // Print the program name to the console
     printf("%s Starting...\n\n", argv[0]);
 
+    // Check for the qatest flag
     if (checkCmdLineFlag(argc, (const char **)argv, "qatest"))
     {
         bqatest = true;
     }
 
+    // Get the method (threaded or streamed) and scaling (weak or strong) choices from the command line
     getCmdLineArgumentString(argc, (const char **)argv, "method", &multiMethodChoice);
     getCmdLineArgumentString(argc, (const char **)argv, "scaling", &scalingChoice);
 
+    // Check for help flags
     if (checkCmdLineFlag(argc, (const char **)argv, "h") ||
         checkCmdLineFlag(argc, (const char **)argv, "help"))
     {
+        // Print usage information and exit the program
         usage();
         exit(EXIT_SUCCESS);
     }
 
+    // Determine whether to use threads for multi GPU calculations
     if (multiMethodChoice == NULL)
     {
         use_threads = false;
     }
     else
-    {
+    {   // If the strings are equal, strcasecmp returns 0
         if (!strcasecmp(multiMethodChoice, "threaded"))
         {
             use_threads = true;
@@ -314,11 +321,13 @@ int main(int argc, char **argv)
         }
     }
 
+    // Print a message if single thread will be used for multi GPU calculations
     if (use_threads == false)
     {
         printf("Using single CPU thread for multiple GPUs\n");
     }
 
+    // Determine whether to use strong scaling mode for multi GPU calculations
     if (scalingChoice == NULL)
     {
         strongScaling = false;
