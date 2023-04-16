@@ -134,6 +134,10 @@ static __global__ void rngSetupStates(
 // Host-side interface to GPU Monte Carlo
 ////////////////////////////////////////////////////////////////////////////////
 
+/* This function sets up the random number generator states
+   and allocates memory on the device and host.
+ */
+
 extern "C" void initMonteCarloGPU(TOptionPlan *plan)
 {
     checkCudaErrors(cudaMalloc(&plan->d_OptionData, sizeof(__TOptionData)*(plan->optionCount)));
