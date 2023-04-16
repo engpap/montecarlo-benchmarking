@@ -1,0 +1,7 @@
+Parallelization_method,Problem_scaling,Number_of_GPUs,Total_number_of_options,Number_of_paths,Init_time_ms,Execution_time_ms
+threaded,strong,1,104857,262144,115.575,297.961
+threaded,strong,1,104857,262144,116.31,286.486
+threaded,strong,1,104857,262144,115.625,275.901
+threaded,strong,1,104857,262144,114.271,276.383
+threaded,strong,1,104857,262144,115.281,275.596
+threaded,strong,1,104857,262144,115.719,276.048
