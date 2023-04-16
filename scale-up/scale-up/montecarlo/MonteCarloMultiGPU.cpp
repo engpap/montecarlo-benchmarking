@@ -114,8 +114,20 @@ static CUT_THREADPROC solverThread(TOptionPlan *plan)
     // RNG states
     initMonteCarloGPU(plan);
 
+    // WARNING: Following line of code has been inserted by @engpap
+    printf(">>> Custom init time: %f", sdkGetTimerValue(&hTimer[plan->device]));
+    // WARNING: Following line of code has been inserted by @engpap
+    sdkResetTimer(&hTimer[plan->device]);
+
+    // WARNING: Following line of code has been inserted by @engpap
+    // TODO: Remove
+    printf(">>> Custom check time is smaller than before: %f",sdkGetTimerValue(&hTimer[plan->device]));
+
     // Main computation
     MonteCarloGPU(plan);
+
+    // WARNING: Following line of code has been inserted by @engpap
+    printf(">>> Custom exec time: %f",sdkGetTimerValue(&hTimer[plan->device]));
 
     checkCudaErrors(cudaDeviceSynchronize());
 
@@ -298,7 +310,7 @@ int main(int argc, char **argv)
 
     // select problem size
     int scale = (strongScaling) ? 1 : GPU_N;
-    int OPT_N = nOptions * scale;
+    int OPT_N = nOptions * scale;]
     int PATH_N = 262144;
 
     // initialize the timers

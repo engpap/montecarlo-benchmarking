@@ -76,6 +76,12 @@ typedef struct
     void *d_Buffer;    
 
     //random number generator states
+    /*
+    rngStates is an array of curandState structures. 
+    These structures hold the random number generator (RNG) states used in the Monte Carlo algorithm.
+    RNGs are essential in Monte Carlo simulations because they generate random samples to estimate 
+    the expected value of a function.
+    */
     curandState *rngStates;
 
     //Pseudorandom samples count
