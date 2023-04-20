@@ -1,6 +1,5 @@
 Parallelization_method,Problem_scaling,Number_of_GPUs,Total_number_of_options,Number_of_paths,Init_time_ms,Execution_time_ms
-streamed,weak,1,104857,262144,28.5347,279.023
-streamed,weak,1,104857,262144,28.7258,280.465
-streamed,weak,1,104857,262144,28.1845,269.177
-streamed,weak,1,104857,262144,28.2372,269.458
-streamed,weak,1,104857,262144,27.8848,268.991
+threaded,weak,1,104857,262144,187.002,288.176
+threaded,strong,1,104857,262144,187.254,287.648
+streamed,weak,1,104857,262144,28.707,270.039
+streamed,strong,1,104857,262144,29.3991,290.359
