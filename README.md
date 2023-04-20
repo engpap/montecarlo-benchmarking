@@ -15,7 +15,7 @@ The project is based on the [Tartan benchmarking suite](https://github.com/uuudo
 <br />
 Nsight Systems:<br />
 
-```nsys profile -o <report_file_name> --stats=true ./MonteCarlo```<br />
+```nsys profile -o <report_file_name> --stats=true ./MonteCarlo --method=<method> --scaling=<scaling>```<br />
 ```--stats=true``` to generate a summary of CPU and GPU activities
 or<br />
 ```nsys profile ./MonteCarlo```<br />
