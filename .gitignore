@@ -10,3 +10,5 @@ ap*.sh
 scale-up/scale-up/montecarlo/MonteCarlo
 scale-up/scale-up/montecarlo*/nsight
 .vscode
+target/
+sections/

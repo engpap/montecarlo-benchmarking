@@ -179,7 +179,10 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         return;
     }
 
-    __TOptionData *optionData = (__TOptionData *)plan->um_OptionData;
+    // TODO: see if to insert to remove CPU page faults
+    //checkCudaErrors(cudaMemPrefetchAsync((TOptionData *)(plan->optionData), sizeof(plan->optionData), cudaCpuDeviceId, stream));
+
+    __TOptionData *um_optionData = (__TOptionData *)plan->um_OptionData;
 
     for (int i = 0; i < plan->optionCount; i++)
     {
@@ -188,10 +191,10 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         const double V = plan->optionData[i].V;
         const double MuByT = (R - 0.5 * V * V) * T;
         const double VBySqrtT = V * sqrt(T);
-        optionData[i].S = (real)plan->optionData[i].S;
-        optionData[i].X = (real)plan->optionData[i].X;
-        optionData[i].MuByT = (real)MuByT;
-        optionData[i].VBySqrtT = (real)VBySqrtT;
+        um_optionData[i].S = (real)plan->optionData[i].S;
+        um_optionData[i].X = (real)plan->optionData[i].X;
+        um_optionData[i].MuByT = (real)MuByT;
+        um_optionData[i].VBySqrtT = (real)VBySqrtT;
     }
 
     // Prefetch the data to the device (GPU) memory 

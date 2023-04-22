@@ -13,7 +13,7 @@ import os
 import math
 
 #============================= CONFIG ===============================
-TIMES = 5
+TIMES = 10
 #gpus = [1,2,4,8]
 gpus = [1] # avoid running with higher number of GPUs until required
 scale = ["strong","weak"]
@@ -23,6 +23,7 @@ schms = ["scale-up"]
 
 apps = []
 #============================== APP =================================
+# [folder_name, "MTC"]
 montercarlo = ["montecarlo_UMv1", "MTC"]
 
 apps.append(montercarlo)

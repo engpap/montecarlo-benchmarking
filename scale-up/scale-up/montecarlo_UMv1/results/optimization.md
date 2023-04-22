@@ -189,3 +189,15 @@ NOTE: The CUDA Samples are not meant for performance measurements. Results may v
 
 Test passed
 ```
+
+--------------------------
+
+# Prefetching data to device - Removing GPU page faults
+By observing the profiling output, we noticed that for rngState there was a considerable amount of page faults, which caused a performance loss. So to removed those page faults, we introduced prefetching and eventually we were able to observe a better performance.
+TODO: add screenshots
+A similar reasoning was applied for the page faults caused by the transfer of the optionData variable and callValue variables. Even if there were only 2 page faults per GPU caused by the memory transfer of the callValue variable,  after analyzing the profiling output, we observed that the prefetching was still convenient: having those 2 page faults required more time than prefetching.
+TODO: other screenshots
+In conclusion, we gained some advantage making the init and execution time smaller.
+
+
+# Prefetching data to host - Removing CPU page faults
