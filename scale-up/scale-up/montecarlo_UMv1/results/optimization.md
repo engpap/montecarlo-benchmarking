@@ -192,14 +192,15 @@ Test passed
 
 --------------------------
 
-# Prefetching data to device - Removing GPU page faults
+# Prefetching data to device - Removing GPU page faults TODO: this is confirmed only for 1g, try other instances
 By observing the profiling output, we noticed that for rngState there was a considerable amount of page faults, which caused a performance loss. So to remove those page faults, we introduced prefetching and eventually we were able to observe a better performance.
 TODO: add screenshots
 A similar reasoning was applied for the page faults caused by the transfer of the optionData variable and callValue variables. Even if there were only 2 page faults per GPU caused by the memory transfer of the callValue variable,  after analyzing the profiling output, we observed that the prefetching was still convenient: having those 2 page faults required more time than prefetching.
 TODO: other screenshots
 In conclusion, we gained some advantage making the init and execution time smaller.
-TODO: check if the total time memcpy HtoD (last lines of nvprof output) is better with prefetching
 
+## optimizations obtained
+By appling these optimizations, we were able to reduce the number of *Unified Memory memcpy Host to Device* from 17 to 1, gaining almost 30% total time reduction for these memory transfers.
 
 # Prefetching data to host - Removing CPU page faults  TODO: this is confirmed only for 1g, try other instances
 In the *CPU Page Faults* section of the profiling output we noticed that these page faults occured on the MonteCarloGPU and on the closeMonteCarloGPU methods. Observing the code, we realized that the um_optionData and the um_callValue variables were being accessed by the CPU, respectively on MonteCarloGPU and closeMonteCarloGPU.
