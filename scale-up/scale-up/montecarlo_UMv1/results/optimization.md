@@ -203,14 +203,17 @@ TODO: check if the total time memcpy HtoD (last lines of nvprof output) is bette
 
 # Prefetching data to host - Removing CPU page faults  TODO: this is confirmed only for 1g, try other instances
 In the *CPU Page Faults* section of the profiling output we noticed that these page faults occured on the MonteCarloGPU and on the closeMonteCarloGPU methods. Observing the code, we realized that the um_optionData and the um_callValue variables were being accessed by the CPU, respectively on MonteCarloGPU and closeMonteCarloGPU.
+
 ## streamed method
 We applied prefetching, setting the destination device to the macro cudaCpuDeviceId (-1) and eventually we managed to remove completely all CPU page faults. 
-Furthermore, we were able to reduce the number of *Unified Memory memcpy Device to Host* from 10 to 1, gaining 15% total time reduction for these memory transfers.
 
 ## threaded method
 Unfortunately during the multithreaded execution, some Write Page Faults remained even after prefetching the data.
 We discovered that this was due to the way *cudaMemPrefetchAsync* is implemented, that is it doesn't interrupt any other host process while migrating the data. To overcome this problem, we added *cudaStreamSynchronize*, passing the default stream (the only one used in the multithreaded execution). By doing so, we eventually managed to remove all remaining page faults. However, this caused the time elapsed between the two kernel calls (rngSetupStates and MonteCarloOneBlockPerOption) to increase almost 4-fold.
 
+## optimizations obtained
+By appling these optimizations, we were able to reduce the number of *Unified Memory memcpy Device to Host* from 10 to 1, gaining 15% total time reduction for these memory transfers.
+Furthermore, by looking at the profiling we noticed that while the loop at lines 199-210 was running, the CUDA API remained idle after completing the prefetch of optionData. We exploited this timeslot to anticipate the prefetching of callValue, that is therefore migrated while the host executes the loop. 
 
 
 

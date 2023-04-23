@@ -187,8 +187,12 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
     // Prefetch um_OptionData on the CPU
     checkCudaErrors(cudaMemPrefetchAsync((__TOptionData *)(plan->um_OptionData), plan->optionCount * sizeof(__TOptionData), cudaCpuDeviceId, stream));
 
-    // Wait for prefetch to finish
-    checkCudaErrors(cudaStreamSynchronize(stream));
+    // If method is streamed (stream_id = 0) -> Wait for prefetch to finish
+    if(stream == cudaStream_t(0))
+        checkCudaErrors(cudaStreamSynchronize(stream));
+
+    // Prefetch output data to the device
+    checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), plan->device, stream));
 
     __TOptionData *um_optionData = (__TOptionData *)plan->um_OptionData;
 
@@ -207,7 +211,6 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
 
     // Prefetch the data to the device (GPU) memory 
     checkCudaErrors(cudaMemPrefetchAsync((__TOptionData *)(plan->um_OptionData), plan->optionCount * sizeof(__TOptionData), plan->device, stream));
-    checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), plan->device, stream));
 
     MonteCarloOneBlockPerOption<<<plan->gridSize, THREAD_N, 0, stream>>>(
         plan->rngStates,
