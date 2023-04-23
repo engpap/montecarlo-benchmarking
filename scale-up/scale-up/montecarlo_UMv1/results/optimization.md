@@ -193,11 +193,25 @@ Test passed
 --------------------------
 
 # Prefetching data to device - Removing GPU page faults
-By observing the profiling output, we noticed that for rngState there was a considerable amount of page faults, which caused a performance loss. So to removed those page faults, we introduced prefetching and eventually we were able to observe a better performance.
+By observing the profiling output, we noticed that for rngState there was a considerable amount of page faults, which caused a performance loss. So to remove those page faults, we introduced prefetching and eventually we were able to observe a better performance.
 TODO: add screenshots
 A similar reasoning was applied for the page faults caused by the transfer of the optionData variable and callValue variables. Even if there were only 2 page faults per GPU caused by the memory transfer of the callValue variable,  after analyzing the profiling output, we observed that the prefetching was still convenient: having those 2 page faults required more time than prefetching.
 TODO: other screenshots
 In conclusion, we gained some advantage making the init and execution time smaller.
+TODO: check if the total time memcpy HtoD (last lines of nvprof output) is better with prefetching
 
 
-# Prefetching data to host - Removing CPU page faults
+# Prefetching data to host - Removing CPU page faults  TODO: this is confirmed only for 1g, try other instances
+In the *CPU Page Faults* section of the profiling output we noticed that these page faults occured on the MonteCarloGPU and on the closeMonteCarloGPU methods. Observing the code, we realized that the um_optionData and the um_callValue variables were being accessed by the CPU, respectively on MonteCarloGPU and closeMonteCarloGPU.
+## streamed method
+We applied prefetching, setting the destination device to the macro cudaCpuDeviceId (-1) and eventually we managed to remove completely all CPU page faults. 
+Furthermore, we were able to reduce the number of *Unified Memory memcpy Device to Host* from 10 to 1, gaining 15% total time reduction for these memory transfers.
+
+## threaded method
+Unfortunately during the multithreaded execution, some Write Page Faults remained even after prefetching the data.
+We discovered that this was due to the way *cudaMemPrefetchAsync* is implemented, that is it doesn't interrupt any other host process while migrating the data. To overcome this problem, we added *cudaStreamSynchronize*, passing the default stream (the only one used in the multithreaded execution). By doing so, we eventually managed to remove all remaining page faults. However, this caused the time elapsed between the two kernel calls (rngSetupStates and MonteCarloOneBlockPerOption) to increase almost 4-fold.
+
+
+
+
+
