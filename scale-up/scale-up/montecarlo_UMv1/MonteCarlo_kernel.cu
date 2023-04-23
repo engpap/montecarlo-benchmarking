@@ -138,18 +138,23 @@ extern "C" void initMonteCarloGPU(TOptionPlan *plan)
     // Allocate states for pseudo random number generators
     checkCudaErrors(cudaMallocManaged((void **)&plan->rngStates,
                                       plan->gridSize * THREAD_N * sizeof(curandState)));
-                                      
-    // Prefetch rngStates to the device.
+
+    // Prefetch rngStates the the device
     checkCudaErrors(cudaMemPrefetchAsync(plan->rngStates, plan->gridSize * THREAD_N * sizeof(curandState), plan->device));
 
     // place each device pathN random numbers apart on the random number sequence
     rngSetupStates<<<plan->gridSize, THREAD_N>>>(plan->rngStates, plan->device);
+
     getLastCudaError("rngSetupStates kernel failed.\n");
 }
 
 // Compute statistics and deallocate internal device memory
 extern "C" void closeMonteCarloGPU(TOptionPlan *plan)
 {
+
+    // Prefetch um_CallValue on the CPU
+    checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), cudaCpuDeviceId));
+
     for (int i = 0; i < plan->optionCount; i++)
     {
         const double RT = plan->optionData[i].R * plan->optionData[i].T;
@@ -179,8 +184,11 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         return;
     }
 
-    // TODO: see if to insert to remove CPU page faults
-    //checkCudaErrors(cudaMemPrefetchAsync((TOptionData *)(plan->optionData), sizeof(plan->optionData), cudaCpuDeviceId, stream));
+    // Prefetch um_OptionData on the CPU
+    checkCudaErrors(cudaMemPrefetchAsync((__TOptionData *)(plan->um_OptionData), plan->optionCount * sizeof(__TOptionData), cudaCpuDeviceId, stream));
+
+    // Wait for prefetch to finish
+    checkCudaErrors(cudaStreamSynchronize(stream));
 
     __TOptionData *um_optionData = (__TOptionData *)plan->um_OptionData;
 
@@ -209,4 +217,3 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         plan->optionCount);
     getLastCudaError("MonteCarloOneBlockPerOption() execution failed\n");
 }
-

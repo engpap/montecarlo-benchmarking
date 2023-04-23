@@ -126,12 +126,12 @@ static CUT_THREADPROC solverThread(TOptionPlan *plan)
     // RNG states
     initMonteCarloGPU(plan);
 
-    // WARNING: Following 2 lines of code has been inserted by @engpap
+    // WARNING: Following 4 lines of code have been inserted by @engpap
     // Record init time
     auto end_init = std::chrono::high_resolution_clock::now();
     // Start MonteCarlo timer
     auto start_mc = std::chrono::high_resolution_clock::now();
-    
+
     // Main computation
     MonteCarloGPU(plan);
 
