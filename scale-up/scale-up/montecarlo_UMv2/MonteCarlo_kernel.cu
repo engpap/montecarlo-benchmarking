@@ -160,10 +160,7 @@ extern "C" void initMonteCarloGPU(TOptionPlan *plan)
 extern "C" void closeMonteCarloGPU(TOptionPlan *plan)
 {
     
-    checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseUnsetPreferredLocation , plan->device)); 
-    checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseUnsetPreferredLocation , plan->device)); 
-
-    checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseSetReadMostly, cudaCpuDeviceId)); 
+    checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseUnsetAccessedBy, plan->device));
     
     for (int i = 0; i < plan->optionCount; i++)
     {
@@ -194,7 +191,6 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         return;
     }
 
-    // KINDA THE SAME
     checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId)); 
 
     __TOptionData *optionData = (__TOptionData *)plan->um_OptionData;
@@ -212,15 +208,11 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         optionData[i].VBySqrtT = (real)VBySqrtT;
     }
 
+    // Not sure if this is useful
     checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseUnsetPreferredLocation , cudaCpuDeviceId)); 
 
-    // KINDA THE SAME 
-    // checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseSetPreferredLocation, plan->device)); 
+    checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseSetAccessedBy, plan->device)); 
 
-    
-    checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseSetPreferredLocation, plan->device)); 
-    checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseSetPreferredLocation, plan->device));
-    
     MonteCarloOneBlockPerOption<<<plan->gridSize, THREAD_N, 0, stream>>>(
         plan->rngStates,
         (__TOptionData *)(plan->um_OptionData),
