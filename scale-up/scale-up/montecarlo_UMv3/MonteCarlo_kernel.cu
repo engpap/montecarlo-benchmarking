@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Internal GPU-side data structures
 ////////////////////////////////////////////////////////////////////////////////
-#define MAX_OPTIONS (1024 * 1024 * 100)
+#define MAX_OPTIONS (1024 * 1024)
 
 // Preprocessed input option data
 typedef struct
@@ -134,34 +134,27 @@ extern "C" void initMonteCarloGPU(TOptionPlan *plan)
 {
     checkCudaErrors(cudaMallocManaged(&plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount)));
     checkCudaErrors(cudaMallocManaged(&plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount)));
-
-    // Applications can use cudaMemAdviseSetAccessedBy performance hint with cudaCpuDeviceId to enable direct access of GPU memory on supported systems.
-    //checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseSetAccessedBy, cudaCpuDeviceId)); 
-    
-    // 4120 CPU page faults
-    // checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseSetReadMostly, plan->device)); 
-    
-
-    
     // Allocate internal device memory
     // Allocate states for pseudo random number generators
     checkCudaErrors(cudaMallocManaged((void **)&plan->rngStates,
                                       plan->gridSize * THREAD_N * sizeof(curandState)));
 
-    // THIS WORKS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! REMOVE COMMENT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    cudaMemAdvise(plan->rngStates, plan->gridSize * THREAD_N * sizeof(curandState), cudaMemAdviseSetPreferredLocation, plan->device);
+    // Prefetch rngStates the the device
+    checkCudaErrors(cudaMemPrefetchAsync(plan->rngStates, plan->gridSize * THREAD_N * sizeof(curandState), plan->device));
 
     // place each device pathN random numbers apart on the random number sequence
     rngSetupStates<<<plan->gridSize, THREAD_N>>>(plan->rngStates, plan->device);
+
     getLastCudaError("rngSetupStates kernel failed.\n");
 }
 
 // Compute statistics and deallocate internal device memory
 extern "C" void closeMonteCarloGPU(TOptionPlan *plan)
 {
-    
-    checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseUnsetAccessedBy, plan->device));
-    
+
+    // Prefetch um_CallValue on the CPU
+    checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), cudaCpuDeviceId));
+
     for (int i = 0; i < plan->optionCount; i++)
     {
         const double RT = plan->optionData[i].R * plan->optionData[i].T;
@@ -183,7 +176,7 @@ extern "C" void closeMonteCarloGPU(TOptionPlan *plan)
 
 // Main computations
 extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
-{   
+{
 
     if (plan->optionCount <= 0 || plan->optionCount > MAX_OPTIONS)
     {
@@ -191,9 +184,17 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         return;
     }
 
-    checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId)); 
+    // Prefetch um_OptionData on the CPU
+    checkCudaErrors(cudaMemPrefetchAsync((__TOptionData *)(plan->um_OptionData), plan->optionCount * sizeof(__TOptionData), cudaCpuDeviceId, stream));
 
-    __TOptionData *optionData = (__TOptionData *)plan->um_OptionData;
+    // If method is streamed (stream_id = 0) -> Wait for prefetch to finish
+    if(stream == cudaStream_t(0))
+        checkCudaErrors(cudaStreamSynchronize(stream));
+
+    // Prefetch output data to the device
+    checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), plan->device, stream));
+
+    __TOptionData *um_optionData = (__TOptionData *)plan->um_OptionData;
 
     for (int i = 0; i < plan->optionCount; i++)
     {
@@ -202,16 +203,14 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         const double V = plan->optionData[i].V;
         const double MuByT = (R - 0.5 * V * V) * T;
         const double VBySqrtT = V * sqrt(T);
-        optionData[i].S = (real)plan->optionData[i].S;
-        optionData[i].X = (real)plan->optionData[i].X;
-        optionData[i].MuByT = (real)MuByT;
-        optionData[i].VBySqrtT = (real)VBySqrtT;
+        um_optionData[i].S = (real)plan->optionData[i].S;
+        um_optionData[i].X = (real)plan->optionData[i].X;
+        um_optionData[i].MuByT = (real)MuByT;
+        um_optionData[i].VBySqrtT = (real)VBySqrtT;
     }
 
-    // Not sure if this is useful
-    checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseUnsetPreferredLocation , cudaCpuDeviceId)); 
-
-    checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseSetAccessedBy, plan->device)); 
+    // Prefetch the data to the device (GPU) memory 
+    checkCudaErrors(cudaMemPrefetchAsync((__TOptionData *)(plan->um_OptionData), plan->optionCount * sizeof(__TOptionData), plan->device, stream));
 
     MonteCarloOneBlockPerOption<<<plan->gridSize, THREAD_N, 0, stream>>>(
         plan->rngStates,

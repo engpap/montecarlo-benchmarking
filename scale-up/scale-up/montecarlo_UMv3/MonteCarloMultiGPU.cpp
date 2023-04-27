@@ -126,12 +126,12 @@ static CUT_THREADPROC solverThread(TOptionPlan *plan)
     // RNG states
     initMonteCarloGPU(plan);
 
-    // WARNING: Following 2 lines of code has been inserted by @engpap
+    // WARNING: Following 4 lines of code have been inserted by @engpap
     // Record init time
     auto end_init = std::chrono::high_resolution_clock::now();
     // Start MonteCarlo timer
     auto start_mc = std::chrono::high_resolution_clock::now();
-    
+
     // Main computation
     MonteCarloGPU(plan);
 
@@ -339,7 +339,7 @@ int main(int argc, char **argv)
     //GPU number present in the system
     int GPU_N;
     checkCudaErrors(cudaGetDeviceCount(&GPU_N));
-    int nOptions = 1024 * 1024 * 100;
+    int nOptions = 1024 * 1024 / 10;
 
     nOptions = adjustProblemSize(GPU_N, nOptions);
 
@@ -580,7 +580,7 @@ int main(int argc, char **argv)
     // Write timings to CSV file
     std::ofstream myfile;
     myfile.open("timings.csv", std::ios_base::app);
-    myfile << (use_threads ? "threaded" : "streamed") << "," << (strongScaling ? "strong" : "weak") << "," << GPU_N << "," << OPT_N << "," << PATH_N << "," << duration_init * 1000.0 << "," << duration_mc * 1000.0 << "\n";
+    myfile << "\n" << (use_threads ? "threaded" : "streamed") << "," << (strongScaling ? "strong" : "weak") << "," << GPU_N << "," << OPT_N << "," << PATH_N << "," << duration_init * 1000.0 << "," << duration_mc * 1000.0;
     myfile.close();
 
     // -------------------------- End of code for custom report --------------------------
