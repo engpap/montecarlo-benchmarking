@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Internal GPU-side data structures
 ////////////////////////////////////////////////////////////////////////////////
-#define MAX_OPTIONS (1024 * 1024)
+#define MAX_OPTIONS (1024 * 1024 * 64)
 
 // Preprocessed input option data
 typedef struct
@@ -139,6 +139,8 @@ extern "C" void initMonteCarloGPU(TOptionPlan *plan)
     checkCudaErrors(cudaMallocManaged((void **)&plan->rngStates,
                                       plan->gridSize * THREAD_N * sizeof(curandState)));
 
+
+    cudaMemAdvise(plan->rngStates, plan->gridSize * THREAD_N * sizeof(curandState), cudaMemAdviseSetPreferredLocation, plan->device);
     // Prefetch rngStates the the device
     checkCudaErrors(cudaMemPrefetchAsync(plan->rngStates, plan->gridSize * THREAD_N * sizeof(curandState), plan->device));
 
