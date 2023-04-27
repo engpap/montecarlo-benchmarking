@@ -1,5 +1,11 @@
 make clean
 make
-./MonteCarlo --scaling=strong --method=streamed
-./MonteCarlo --scaling=strong --method=streamed
-nsys profile -o report_2g_strong_streamed_UMv1 --stats=true --cuda-memory-usage=true --cuda-um-cpu-page-faults=true --cuda-um-gpu-page-faults=true ./MonteCarlo --method=streamed --scaling=strong
+./MonteCarlo --scaling=weak --method=streamed
+./MonteCarlo --scaling=weak --method=streamed
+./MonteCarlo --scaling=weak --method=streamed
+./MonteCarlo --scaling=weak --method=streamed
+./MonteCarlo --scaling=weak --method=streamed
+./MonteCarlo --scaling=weak --method=streamed
+./MonteCarlo --scaling=weak --method=streamed
+./MonteCarlo --scaling=weak --method=streamed
+nvprof ./MonteCarlo --method=streamed --scaling=weak
