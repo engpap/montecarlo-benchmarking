@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Internal GPU-side data structures
 ////////////////////////////////////////////////////////////////////////////////
-#define MAX_OPTIONS (1024 * 1024 * 100)
+#define MAX_OPTIONS (1024 * 1024 * 64)
 
 // Preprocessed input option data
 typedef struct
@@ -162,6 +162,16 @@ extern "C" void closeMonteCarloGPU(TOptionPlan *plan)
     
     checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseUnsetAccessedBy, plan->device));
     
+    // 1
+    checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseUnsetPreferredLocation , plan->device)); 
+
+    // 1
+    // Optional, not really an improvement
+    checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseSetAccessedBy, cudaCpuDeviceId)); 
+
+    // 2
+    // checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseUnsetAccessedBy , plan->device)); 
+
     for (int i = 0; i < plan->optionCount; i++)
     {
         const double RT = plan->optionData[i].R * plan->optionData[i].T;
@@ -207,6 +217,15 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         optionData[i].MuByT = (real)MuByT;
         optionData[i].VBySqrtT = (real)VBySqrtT;
     }
+
+    // 1
+    checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseSetPreferredLocation, plan->device));
+
+    // 2
+    // checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId));
+
+    // 2
+    // checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseSetAccessedBy, plan->device));
 
     // Not sure if this is useful
     checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseUnsetPreferredLocation , cudaCpuDeviceId)); 

@@ -13,6 +13,16 @@ The project is based on the [Tartan benchmarking suite](https://github.com/uuudo
 ```conda deactivate```<br />
 ```conda activate``` <br />
 <br />
+
+Nvprof:<br />
+
+```nvprof ./MonteCarlo --method=<method> --scaling=<scaling>```<br />
+
+To print the gpu trace: <br />
+
+```nvprof --print-gpu-trace ./MonteCarlo --method=<method> --scaling=<scaling>```<br />
+
+
 Nsight Systems:<br />
 
 ```nsys profile -o <report_file_name> --stats=true --cuda-memory-usage=true --cuda-um-cpu-page-faults=true 	--cuda-um-gpu-page-faults=true --force-overwrite=true ./MonteCarlo --method=<method> --scaling=<scaling>```<br />
