@@ -9,7 +9,7 @@ These hints are specified with an input parameter to `cudaMemAdvise()`, such as:
 
 ---------------------------------------------------------------------------------------------------
 The baseline is the code ported in Unified Memory but without any optimization.
-The follqwing table shows execution times of the baseline code, run with the streamed method, strong scaling, on 1 GPU.
+The following table shows execution times of the baseline code, run with the streamed method, strong scaling, on 1 GPU.
 ---------------------------------------------------------------------------------------------------
             Type  Time(%)      Time     Calls       Avg       Min       Max  Name
  GPU activities:   99.68%  2.66031s         1  2.66031s  2.66031s  2.66031s  MonteCarloOneBlockPerOption(curandStateXORWOW*, __TOptionData const *, __TOptionValue*, int, int)
@@ -178,7 +178,8 @@ Overall, the observable improvement was only obtained on hints applied to rngSta
 
 
 
-
+# The second step revised
+To better understand how the cudaMemAdvise improved the performance for each data, we tried to first apply changes to only um_optionData and then only to um_callValue.
 
 
 
