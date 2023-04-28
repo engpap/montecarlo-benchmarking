@@ -339,7 +339,7 @@ int main(int argc, char **argv)
     //GPU number present in the system
     int GPU_N;
     checkCudaErrors(cudaGetDeviceCount(&GPU_N));
-    int nOptions = 1024 * 1024*32;
+    int nOptions = 1024 * 1024 * 32;
 
     nOptions = adjustProblemSize(GPU_N, nOptions);
 

@@ -151,11 +151,7 @@ extern "C" void initMonteCarloGPU(TOptionPlan *plan)
 }
 
 // Compute statistics and deallocate internal device memory
-extern "C" void closeMonteCarloGPU(TOptionPlan *plan)
-{
-
-    // Prefetch um_CallValue on the CPU
-    checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), cudaCpuDeviceId));
+extern "C" void closeMonteCarloGPU(TOptionPlan *plan) {
 
     for (int i = 0; i < plan->optionCount; i++)
     {
@@ -221,4 +217,7 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         plan->pathN,
         plan->optionCount);
     getLastCudaError("MonteCarloOneBlockPerOption() execution failed\n");
+
+    // Prefetch um_CallValue on the CPU
+    checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), cudaCpuDeviceId));
 }

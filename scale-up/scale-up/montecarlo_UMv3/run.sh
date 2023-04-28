@@ -1,11 +1,14 @@
 make clean
 make
-./MonteCarlo --scaling=weak --method=streamed
-./MonteCarlo --scaling=weak --method=streamed
-./MonteCarlo --scaling=weak --method=streamed
-./MonteCarlo --scaling=weak --method=streamed
-./MonteCarlo --scaling=weak --method=streamed
-./MonteCarlo --scaling=weak --method=streamed
-./MonteCarlo --scaling=weak --method=streamed
-./MonteCarlo --scaling=weak --method=streamed
-nvprof ./MonteCarlo --method=streamed --scaling=weak
+
+export CUDA_VISIBLE_DEVICES=0,1
+
+for scaling in weak strong
+do
+    for method in threaded streamed
+    do
+        ./MonteCarlo --scaling=$scaling --method=$method
+        nvprof --log-file ./nvprof/nvprof_2g_x32_{$scaling}_{$method}_UMv3.txt ./MonteCarlo --scaling=$scaling --method=$method
+        #nsys profile -o report_2g_{$scaling}_{$method}_UMv3 --stats=true --cuda-memory-usage=true --cuda-um-cpu-page-faults=true --cuda-um-gpu-page-faults=true --force-overwrite=true ./MonteCarlo --scaling=$scaling --method=$method 
+    done
+done

@@ -159,19 +159,6 @@ extern "C" void initMonteCarloGPU(TOptionPlan *plan)
 // Compute statistics and deallocate internal device memory
 extern "C" void closeMonteCarloGPU(TOptionPlan *plan)
 {
-    
-    checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseUnsetAccessedBy, plan->device));
-    
-    // 1
-    checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseUnsetPreferredLocation , plan->device)); 
-
-    // 1
-    // Optional, not really an improvement
-    checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseSetAccessedBy, cudaCpuDeviceId)); 
-
-    // 2
-    // checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseUnsetAccessedBy , plan->device)); 
-
     for (int i = 0; i < plan->optionCount; i++)
     {
         const double RT = plan->optionData[i].R * plan->optionData[i].T;
@@ -239,4 +226,17 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         plan->pathN,
         plan->optionCount);
     getLastCudaError("MonteCarloOneBlockPerOption() execution failed\n");
+
+    
+    checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseUnsetAccessedBy, plan->device));
+    
+    // 1
+    checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseUnsetPreferredLocation , plan->device)); 
+
+    // 1
+    // Optional, not really an improvement
+    checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseSetAccessedBy, cudaCpuDeviceId)); 
+
+    // 2
+    // checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseUnsetAccessedBy , plan->device)); 
 }

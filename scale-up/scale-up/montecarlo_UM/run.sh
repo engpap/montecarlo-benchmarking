@@ -16,8 +16,17 @@ do
         ./MonteCarlo --scaling=$scaling --method=$method
         ./MonteCarlo --scaling=$scaling --method=$method
         ./MonteCarlo --scaling=$scaling --method=$method
-        ./MonteCarlo --scaling=$scaling --method=$method # 10
-        nvprof --log-file nvprof_1g_x32_{$scaling}_{$method}.txt ./MonteCarlo --scaling=$scaling --method=$method
-        #nsys profile -o report_2g_x32_{$scaling}_{$method}_baseline --stats=true --cuda-memory-usage=true --cuda-um-cpu-page-faults=true --cuda-um-gpu-page-faults=true --force-overwrite=true ./MonteCarlo --scaling=$scaling --method=$method 
+        ./MonteCarlo --scaling=$scaling --method=$method
+        ./MonteCarlo --scaling=$scaling --method=$method
+        ./MonteCarlo --scaling=$scaling --method=$method
+        ./MonteCarlo --scaling=$scaling --method=$method
+        ./MonteCarlo --scaling=$scaling --method=$method
+        ./MonteCarlo --scaling=$scaling --method=$method
+        ./MonteCarlo --scaling=$scaling --method=$method
+        ./MonteCarlo --scaling=$scaling --method=$method
+        ./MonteCarlo --scaling=$scaling --method=$method
+        ./MonteCarlo --scaling=$scaling --method=$method
+        nvprof --log-file ./nvprof/nvprof_2g_x32_${scaling}_${method}_UM_baseline.txt ./MonteCarlo --scaling=$scaling --method=$method
+        #nsys profile -o report_2g_x32_${scaling}_${method}_UM_baseline --stats=true --cuda-memory-usage=true --cuda-um-cpu-page-faults=true --cuda-um-gpu-page-faults=true --force-overwrite=true ./MonteCarlo --scaling=$scaling --method=$method 
     done
 done
