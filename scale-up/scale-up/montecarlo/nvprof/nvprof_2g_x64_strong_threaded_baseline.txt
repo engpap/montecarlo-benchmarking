@@ -1,0 +1,18 @@
+==45275== NVPROF is profiling process 45275, command: ./MonteCarlo --scaling=strong --method=threaded
+==45275== Profiling application: ./MonteCarlo --scaling=strong --method=threaded
+==45275== Profiling result:
+   Start  Duration            Grid Size      Block Size     Regs*    SSMem*    DSMem*      Size  Throughput  SrcMemType  DstMemType           Device   Context    Stream  Name
+7.37458s  2.8508ms           (3200 1 1)       (256 1 1)        32        0B        0B         -           -           -           -  Tesla V100-SXM2         1         7  rngSetupStates(curandStateXORWOW*, int) [237]
+7.55190s  48.153ms                    -               -         -         -         -  512.00MB  10.384GB/s      Pinned      Device  Tesla V100-SXM2         1         7  [CUDA memcpy HtoD]
+7.55221s  2.8406ms           (3200 1 1)       (256 1 1)        32        0B        0B         -           -           -           -  Tesla V100-SXM2         2        15  rngSetupStates(curandStateXORWOW*, int) [245]
+7.60006s  33.0644s           (3200 1 1)       (256 1 1)        31  2.0000KB        0B         -           -           -           -  Tesla V100-SXM2         1         7  MonteCarloOneBlockPerOption(curandStateXORWOW*, __TOptionData const *, __TOptionValue*, int, int) [241]
+7.72798s  47.743ms                    -               -         -         -         -  512.00MB  10.473GB/s      Pinned      Device  Tesla V100-SXM2         2        15  [CUDA memcpy HtoD]
+7.77574s  33.8159s           (3200 1 1)       (256 1 1)        31  2.0000KB        0B         -           -           -           -  Tesla V100-SXM2         2        15  MonteCarloOneBlockPerOption(curandStateXORWOW*, __TOptionData const *, __TOptionValue*, int, int) [248]
+40.6644s  21.928ms                    -               -         -         -         -  256.00MB  11.401GB/s      Device      Pinned  Tesla V100-SXM2         1         7  [CUDA memcpy DtoH]
+41.5917s  21.858ms                    -               -         -         -         -  256.00MB  11.437GB/s      Device      Pinned  Tesla V100-SXM2         2        15  [CUDA memcpy DtoH]
+
+Regs: Number of registers used per CUDA thread. This number includes registers used internally by the CUDA driver and/or tools and can be more than what the compiler shows.
+SSMem: Static shared memory allocated per CUDA block.
+DSMem: Dynamic shared memory allocated per CUDA block.
+SrcMemType: The type of source memory accessed by memory operation/copy
+DstMemType: The type of destination memory accessed by memory operation/copy
