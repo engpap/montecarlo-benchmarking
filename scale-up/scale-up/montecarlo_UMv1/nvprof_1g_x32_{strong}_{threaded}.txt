@@ -1,0 +1,31 @@
+==16008== NVPROF is profiling process 16008, command: ./MonteCarlo --scaling=strong --method=threaded
+==16008== Profiling application: ./MonteCarlo --scaling=strong --method=threaded
+==16008== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   99.99%  85.3115s         1  85.3115s  85.3115s  85.3115s  MonteCarloOneBlockPerOption(curandStateXORWOW*, __TOptionData const *, __TOptionValue*, int, int)
+                    0.01%  7.6042ms         1  7.6042ms  7.6042ms  7.6042ms  rngSetupStates(curandStateXORWOW*, int)
+      API calls:   99.34%  85.3115s         1  85.3115s  85.3115s  85.3115s  cudaDeviceSynchronize
+                    0.22%  186.86ms         3  62.288ms  22.746us  186.81ms  cudaMallocManaged
+                    0.20%  173.67ms         2  86.837ms  12.480us  173.66ms  cudaStreamSynchronize
+                    0.18%  153.81ms         5  30.762ms  152.59us  98.203ms  cudaMemPrefetchAsync
+                    0.06%  51.234ms         3  17.078ms  1.1242ms  29.530ms  cudaFree
+                    0.00%  635.24us         4  158.81us  109.48us  184.72us  cudaGetDeviceProperties
+                    0.00%  173.44us       101  1.7170us     169ns  74.371us  cuDeviceGetAttribute
+                    0.00%  75.999us         2  37.999us  35.277us  40.722us  cudaLaunchKernel
+                    0.00%  36.451us         2  18.225us  17.928us  18.523us  cudaSetDevice
+                    0.00%  27.020us         1  27.020us  27.020us  27.020us  cuDeviceGetName
+                    0.00%  20.280us         1  20.280us  20.280us  20.280us  cuDeviceGetPCIBusId
+                    0.00%  13.218us         1  13.218us  13.218us  13.218us  cudaMemAdvise
+                    0.00%  1.9440us         3     648ns     221ns  1.4280us  cuDeviceGetCount
+                    0.00%  1.1970us         2     598ns     166ns  1.0310us  cuDeviceGet
+                    0.00%     914ns         1     914ns     914ns     914ns  cudaGetDeviceCount
+                    0.00%     765ns         2     382ns     374ns     391ns  cudaGetLastError
+                    0.00%     414ns         1     414ns     414ns     414ns  cuDeviceTotalMem
+                    0.00%     328ns         1     328ns     328ns     328ns  cuModuleGetLoadingMode
+                    0.00%     308ns         1     308ns     308ns     308ns  cuDeviceGetUuid
+
+==16008== Unified Memory profiling result:
+Device "Tesla P100-SXM2-16GB (0)"
+   Count  Avg Size  Min Size  Max Size  Total Size  Total Time  Name
+     256  2.0000MB  2.0000MB  2.0000MB  512.0000MB  46.70457ms  Host To Device
+     128  2.0000MB  2.0000MB  2.0000MB  256.0000MB  20.73629ms  Device To Host
