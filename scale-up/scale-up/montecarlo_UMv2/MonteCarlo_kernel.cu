@@ -159,6 +159,7 @@ extern "C" void initMonteCarloGPU(TOptionPlan *plan)
 // Compute statistics and deallocate internal device memory
 extern "C" void closeMonteCarloGPU(TOptionPlan *plan)
 {
+
     for (int i = 0; i < plan->optionCount; i++)
     {
         const double RT = plan->optionData[i].R * plan->optionData[i].T;
@@ -205,19 +206,16 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         optionData[i].VBySqrtT = (real)VBySqrtT;
     }
 
+    checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseSetAccessedBy, plan->device)); 
+
     // 1
     checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseSetPreferredLocation, plan->device));
 
     // 2
-    // checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId));
+    //checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId));
 
     // 2
-    // checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseSetAccessedBy, plan->device));
-
-    // Not sure if this is useful
-    checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseUnsetPreferredLocation , cudaCpuDeviceId)); 
-
-    checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseSetAccessedBy, plan->device)); 
+    //checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseSetAccessedBy, plan->device));
 
     MonteCarloOneBlockPerOption<<<plan->gridSize, THREAD_N, 0, stream>>>(
         plan->rngStates,
@@ -226,17 +224,5 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         plan->pathN,
         plan->optionCount);
     getLastCudaError("MonteCarloOneBlockPerOption() execution failed\n");
-
     
-    checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseUnsetAccessedBy, plan->device));
-    
-    // 1
-    checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseUnsetPreferredLocation , plan->device)); 
-
-    // 1
-    // Optional, not really an improvement
-    checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseSetAccessedBy, cudaCpuDeviceId)); 
-
-    // 2
-    // checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseUnsetAccessedBy , plan->device)); 
 }

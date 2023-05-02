@@ -139,8 +139,6 @@ extern "C" void initMonteCarloGPU(TOptionPlan *plan)
     checkCudaErrors(cudaMallocManaged((void **)&plan->rngStates,
                                       plan->gridSize * THREAD_N * sizeof(curandState)));
 
-
-    cudaMemAdvise(plan->rngStates, plan->gridSize * THREAD_N * sizeof(curandState), cudaMemAdviseSetPreferredLocation, plan->device);
     // Prefetch rngStates the the device
     checkCudaErrors(cudaMemPrefetchAsync(plan->rngStates, plan->gridSize * THREAD_N * sizeof(curandState), plan->device));
 
@@ -185,7 +183,7 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
     // Prefetch um_OptionData on the CPU
     checkCudaErrors(cudaMemPrefetchAsync((__TOptionData *)(plan->um_OptionData), plan->optionCount * sizeof(__TOptionData), cudaCpuDeviceId, stream));
 
-    // If method is streamed (stream_id = 0) -> Wait for prefetch to finish
+    // If method is threaded (stream_id = 0) -> Wait for prefetch to finish
     if(stream == cudaStream_t(0))
         checkCudaErrors(cudaStreamSynchronize(stream));
 

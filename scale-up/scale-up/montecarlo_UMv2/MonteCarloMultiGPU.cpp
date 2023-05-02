@@ -22,6 +22,7 @@
 #include <string.h>
 #include <math.h>
 #include <cuda_runtime.h>
+#include <mutex>
 
 // includes, project
 #include <helper_functions.h> // Helper functions (utilities, parsing, timing)
@@ -104,8 +105,9 @@ StopWatchInterface **hTimer = NULL;
 #include <chrono>
 #include <iostream>
 
-float duration_init;
-float duration_mc;
+float duration_init = 0;
+float duration_mc = 0;
+std::mutex mc_mutex, init_mutex;
 
 static CUT_THREADPROC solverThread(TOptionPlan *plan)
 {   
@@ -126,6 +128,8 @@ static CUT_THREADPROC solverThread(TOptionPlan *plan)
     // RNG states
     initMonteCarloGPU(plan);
 
+    checkCudaErrors(cudaDeviceSynchronize());
+
     // WARNING: Following 2 lines of code has been inserted by @engpap
     // Record init time
     auto end_init = std::chrono::high_resolution_clock::now();
@@ -142,8 +146,14 @@ static CUT_THREADPROC solverThread(TOptionPlan *plan)
     auto end_mc = std::chrono::high_resolution_clock::now();
 
     // Print timing results
-    duration_init = std::chrono::duration_cast<std::chrono::duration<double>>(end_init - start_init).count();
-    duration_mc = std::chrono::duration_cast<std::chrono::duration<double>>(end_mc - start_mc).count();
+    init_mutex.lock();
+    duration_init += std::chrono::duration_cast<std::chrono::duration<double>>(end_init - start_init).count();
+    init_mutex.unlock();
+
+    mc_mutex.lock();
+    duration_mc += std::chrono::duration_cast<std::chrono::duration<double>>(end_mc - start_mc).count();
+    mc_mutex.unlock();
+
 
     //Stop the timer
     sdkStopTimer(&hTimer[plan->device]);
@@ -339,7 +349,7 @@ int main(int argc, char **argv)
     //GPU number present in the system
     int GPU_N;
     checkCudaErrors(cudaGetDeviceCount(&GPU_N));
-    int nOptions = 1024 * 1024 * 32;
+    int nOptions = 1024 * 1024;
 
     nOptions = adjustProblemSize(GPU_N, nOptions);
 
@@ -574,8 +584,8 @@ int main(int argc, char **argv)
     // -------------------------- Start of code for custom report --------------------------
     // Print timings to console
     printf("\n");
-    std::cout << ">>> Inside solverThread, initMonteCarloGPU took " << duration_init * 1000.0 << " milliseconds" << std::endl;
-    std::cout << ">>> Inside solverThread, MonteCarloGPU took " << duration_mc * 1000.0 << " milliseconds" << std::endl;
+    std::cout << ">>> InitMonteCarloGPU took " << duration_init * 1000.0 << " milliseconds" << std::endl;
+    std::cout << ">>> MonteCarloGPU took " << duration_mc * 1000.0 << " milliseconds" << std::endl;
 
     // Write timings to CSV file
     std::ofstream myfile;

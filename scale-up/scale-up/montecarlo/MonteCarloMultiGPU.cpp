@@ -22,6 +22,7 @@
 #include <string.h>
 #include <math.h>
 #include <cuda_runtime.h>
+#include <mutex>
 
 // includes, project
 #include <helper_functions.h> // Helper functions (utilities, parsing, timing)
@@ -104,8 +105,9 @@ StopWatchInterface **hTimer = NULL;
 #include <chrono>
 #include <iostream>
 
-float duration_init;
-float duration_mc;
+float duration_init = 0;
+float duration_mc = 0;
+std::mutex mc_mutex, init_mutex;
 
 static CUT_THREADPROC solverThread(TOptionPlan *plan)
 {   
@@ -126,6 +128,8 @@ static CUT_THREADPROC solverThread(TOptionPlan *plan)
     // RNG states
     initMonteCarloGPU(plan);
 
+    checkCudaErrors(cudaDeviceSynchronize());
+
     // WARNING: Following 2 lines of code has been inserted by @engpap
     // Record init time
     auto end_init = std::chrono::high_resolution_clock::now();
@@ -142,8 +146,14 @@ static CUT_THREADPROC solverThread(TOptionPlan *plan)
     auto end_mc = std::chrono::high_resolution_clock::now();
 
     // Print timing results
-    duration_init = std::chrono::duration_cast<std::chrono::duration<double>>(end_init - start_init).count();
-    duration_mc = std::chrono::duration_cast<std::chrono::duration<double>>(end_mc - start_mc).count();
+    init_mutex.lock();
+    duration_init += std::chrono::duration_cast<std::chrono::duration<double>>(end_init - start_init).count();
+    init_mutex.unlock();
+
+    mc_mutex.lock();
+    duration_mc += std::chrono::duration_cast<std::chrono::duration<double>>(end_mc - start_mc).count();
+    mc_mutex.unlock();
+
 
     //Stop the timer
     sdkStopTimer(&hTimer[plan->device]);
@@ -278,39 +288,32 @@ int main(int argc, char **argv)
     bool bqatest = false;
     bool strongScaling = false;
 
-    // Set pointers to argc and argv
     pArgc = &argc;
     pArgv = argv;
 
-    // Print the program name to the console
     printf("%s Starting...\n\n", argv[0]);
 
-    // Check for the qatest flag
     if (checkCmdLineFlag(argc, (const char **)argv, "qatest"))
     {
         bqatest = true;
     }
 
-    // Get the method (threaded or streamed) and scaling (weak or strong) choices from the command line
     getCmdLineArgumentString(argc, (const char **)argv, "method", &multiMethodChoice);
     getCmdLineArgumentString(argc, (const char **)argv, "scaling", &scalingChoice);
 
-    // Check for help flags
     if (checkCmdLineFlag(argc, (const char **)argv, "h") ||
         checkCmdLineFlag(argc, (const char **)argv, "help"))
     {
-        // Print usage information and exit the program
         usage();
         exit(EXIT_SUCCESS);
     }
 
-    // Determine whether to use threads for multi GPU calculations
     if (multiMethodChoice == NULL)
     {
         use_threads = false;
     }
     else
-    {   // If the strings are equal, strcasecmp returns 0
+    {
         if (!strcasecmp(multiMethodChoice, "threaded"))
         {
             use_threads = true;
@@ -321,13 +324,11 @@ int main(int argc, char **argv)
         }
     }
 
-    // Print a message if single thread will be used for multi GPU calculations
     if (use_threads == false)
     {
         printf("Using single CPU thread for multiple GPUs\n");
     }
 
-    // Determine whether to use strong scaling mode for multi GPU calculations
     if (scalingChoice == NULL)
     {
         strongScaling = false;
@@ -348,7 +349,7 @@ int main(int argc, char **argv)
     //GPU number present in the system
     int GPU_N;
     checkCudaErrors(cudaGetDeviceCount(&GPU_N));
-    int nOptions = 1024 * 1024 * 32;
+    int nOptions = 1024 * 1024;
 
     nOptions = adjustProblemSize(GPU_N, nOptions);
 
@@ -435,15 +436,9 @@ int main(int argc, char **argv)
         gpuBase += optionSolver[i].optionCount;
     }
 
-    // use_threads ? launch solverThread : lauch multiSolver
 
-    if (use_threads || bqatest) // multi GPU calculations with threads
+    if (use_threads || bqatest)
     {
-        /*
-        1. The main function creates a thread for each GPU.
-        2. The code waits for the threads to finish.
-        3. Prints the statistics of the GPU computation.
-        */
         //Start CPU thread for each GPU
         for (gpuIndex = 0; gpuIndex < GPU_N; gpuIndex++)
         {
@@ -494,7 +489,7 @@ int main(int argc, char **argv)
         sumReserve /= OPT_N;
     }
 
-    if (!use_threads || bqatest) // multi GPU calculations with streams
+    if (!use_threads || bqatest)
     {
         multiSolver(optionSolver, GPU_N);
 
@@ -589,8 +584,8 @@ int main(int argc, char **argv)
     // -------------------------- Start of code for custom report --------------------------
     // Print timings to console
     printf("\n");
-    std::cout << ">>> Inside solverThread, initMonteCarloGPU took " << duration_init * 1000.0 << " milliseconds" << std::endl;
-    std::cout << ">>> Inside solverThread, MonteCarloGPU took " << duration_mc * 1000.0 << " milliseconds" << std::endl;
+    std::cout << ">>> InitMonteCarloGPU took " << duration_init * 1000.0 << " milliseconds" << std::endl;
+    std::cout << ">>> MonteCarloGPU took " << duration_mc * 1000.0 << " milliseconds" << std::endl;
 
     // Write timings to CSV file
     std::ofstream myfile;
