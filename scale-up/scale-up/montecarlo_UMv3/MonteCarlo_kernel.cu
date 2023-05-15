@@ -139,7 +139,6 @@ extern "C" void initMonteCarloGPU(TOptionPlan *plan)
     checkCudaErrors(cudaMallocManaged((void **)&plan->rngStates,
                                       plan->gridSize * THREAD_N * sizeof(curandState)));
 
-    cudaMemAdvise(plan->rngStates, plan->gridSize * THREAD_N * sizeof(curandState), cudaMemAdviseSetAccessedBy, plan->device);
     // Prefetch rngStates the the device
     checkCudaErrors(cudaMemPrefetchAsync(plan->rngStates, plan->gridSize * THREAD_N * sizeof(curandState), plan->device));
 
@@ -152,11 +151,6 @@ extern "C" void initMonteCarloGPU(TOptionPlan *plan)
 // Compute statistics and deallocate internal device memory
 extern "C" void closeMonteCarloGPU(TOptionPlan *plan)
 {
-    checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseUnsetAccessedBy, plan->device));
-    
-    // Prefetch um_CallValue on the CPU
-    checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), cudaCpuDeviceId));
-
     for (int i = 0; i < plan->optionCount; i++)
     {
         const double RT = plan->optionData[i].R * plan->optionData[i].T;
@@ -186,16 +180,18 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         return;
     }
 
-    // Prefetch um_OptionData on the CPU
-    checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId)); 
-    checkCudaErrors(cudaMemPrefetchAsync((__TOptionData *)(plan->um_OptionData), plan->optionCount * sizeof(__TOptionData), cudaCpuDeviceId, stream));
+    // Prefetch the data to the device (GPU) memory 
+    //checkCudaErrors(cudaMemPrefetchAsync((__TOptionData *)(plan->um_OptionData), plan->optionCount * sizeof(__TOptionData), cudaCpuDeviceId, stream));
 
-    // If method is streamed (stream_id = 0) -> Wait for prefetch to finish
-    if(stream == cudaStream_t(0))
-        checkCudaErrors(cudaStreamSynchronize(stream));
+    // better than prefetch -> causes some page faults but should require less time to migrate data than prefetch
+    checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId)); 
+
+    // If method is threaded (stream_id = 0) -> Wait for prefetch to finish
+    //if(stream == cudaStream_t(0))
+    //    checkCudaErrors(cudaStreamSynchronize(stream));
+
 
     // Prefetch output data to the device
-    
     checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), plan->device, stream));
 
     __TOptionData *um_optionData = (__TOptionData *)plan->um_OptionData;
@@ -213,11 +209,11 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         um_optionData[i].VBySqrtT = (real)VBySqrtT;
     }
 
-    checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseUnsetPreferredLocation , cudaCpuDeviceId)); 
-
     // Prefetch the data to the device (GPU) memory 
+    //checkCudaErrors(cudaMemPrefetchAsync((__TOptionData *)(plan->um_OptionData), plan->optionCount * sizeof(__TOptionData), plan->device, stream));
+
+    // useful because instead of moving optiondata to the gpu they can access it while it resides on the host memory (no migration required)
     checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseSetAccessedBy, plan->device)); 
-    checkCudaErrors(cudaMemPrefetchAsync((__TOptionData *)(plan->um_OptionData), plan->optionCount * sizeof(__TOptionData), plan->device, stream));
 
     MonteCarloOneBlockPerOption<<<plan->gridSize, THREAD_N, 0, stream>>>(
         plan->rngStates,
@@ -226,4 +222,7 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         plan->pathN,
         plan->optionCount);
     getLastCudaError("MonteCarloOneBlockPerOption() execution failed\n");
+
+    // Prefetch um_CallValue on the CPU
+    checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), cudaCpuDeviceId));
 }
