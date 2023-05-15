@@ -284,6 +284,7 @@ int main(int argc, char **argv)
 {
     char *multiMethodChoice = NULL;
     char *scalingChoice = NULL;
+    char *problemSize = NULL;
     bool use_threads = true;
     bool bqatest = false;
     bool strongScaling = false;
@@ -300,6 +301,7 @@ int main(int argc, char **argv)
 
     getCmdLineArgumentString(argc, (const char **)argv, "method", &multiMethodChoice);
     getCmdLineArgumentString(argc, (const char **)argv, "scaling", &scalingChoice);
+    getCmdLineArgumentString(argc, (const char **)argv, "size", &problemSize);
 
     if (checkCmdLineFlag(argc, (const char **)argv, "h") ||
         checkCmdLineFlag(argc, (const char **)argv, "help"))
@@ -349,7 +351,12 @@ int main(int argc, char **argv)
     //GPU number present in the system
     int GPU_N;
     checkCudaErrors(cudaGetDeviceCount(&GPU_N));
-    int nOptions = 1024 * 1024;
+
+    int nOptions = 0;
+    if ( problemSize ==NULL)
+        nOptions = 512 * 512;
+    else
+        nOptions = std::stoi(problemSize)*std::stoi(problemSize);
 
     nOptions = adjustProblemSize(GPU_N, nOptions);
 

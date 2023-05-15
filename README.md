@@ -31,6 +31,11 @@ Nsight Systems:<br />
 or<br />
 ```nsys profile ./MonteCarlo```<br />
 
+
+For seeting paranoid level:
+```sudo sh -c 'echo 1 >/proc/sys/kernel/perf_event_paranoid'```
+```cat /proc/sys/kernel/perf_event_paranoid ```
+
 ###========================================================================
 ####         Author:  Ang Li, PNNL
 ####        Website:  http://www.angliphd.com  
