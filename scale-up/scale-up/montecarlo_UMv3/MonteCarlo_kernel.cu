@@ -186,7 +186,7 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
     // better than prefetch -> causes some page faults but should require less time to migrate data than prefetch
     checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId)); 
 
-    // If method is threaded (stream_id = 0) -> Wait for prefetch to finish
+    // No longer required since we do not prefetch
     //if(stream == cudaStream_t(0))
     //    checkCudaErrors(cudaStreamSynchronize(stream));
 
