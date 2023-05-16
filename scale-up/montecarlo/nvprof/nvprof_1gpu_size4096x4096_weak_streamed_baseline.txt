@@ -1,0 +1,5 @@
+==28251== NVPROF is profiling process 28251, command: ./MonteCarlo --scaling=weak --method=streamed --size=4096
+==28251== Profiling application: ./MonteCarlo --scaling=weak --method=streamed --size=4096
+==28251== Profiling result:
+No kernels were profiled.
+No API activities were profiled.

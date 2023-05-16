@@ -1,0 +1,36 @@
+==38295== NVPROF is profiling process 38295, command: ./MonteCarlo --scaling=weak --method=streamed --size=8192
+==38295== Profiling application: ./MonteCarlo --scaling=weak --method=streamed --size=8192
+==38295== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   99.99%  67.1612s         1  67.1612s  67.1612s  67.1612s  MonteCarloOneBlockPerOption(curandStateXORWOW*, __TOptionData const *, __TOptionValue*, int, int)
+                    0.01%  7.6752ms         1  7.6752ms  7.6752ms  7.6752ms  rngSetupStates(curandStateXORWOW*, int)
+      API calls:   99.44%  67.1610s         1  67.1610s  67.1610s  67.1610s  cudaEventSynchronize
+                    0.26%  176.68ms         3  58.894ms  1.7509ms  107.95ms  cudaFree
+                    0.26%  173.36ms         1  173.36ms  173.36ms  173.36ms  cudaStreamCreate
+                    0.03%  20.491ms         3  6.8303ms  26.756us  20.378ms  cudaMallocManaged
+                    0.01%  7.6768ms         1  7.6768ms  7.6768ms  7.6768ms  cudaDeviceSynchronize
+                    0.00%  1.1039ms         4  275.98us  200.04us  387.14us  cudaGetDeviceProperties
+                    0.00%  352.07us         1  352.07us  352.07us  352.07us  cudaEventRecord
+                    0.00%  263.30us       101  2.6060us     175ns  113.79us  cuDeviceGetAttribute
+                    0.00%  113.39us         2  56.696us  50.510us  62.883us  cudaLaunchKernel
+                    0.00%  68.253us         7  9.7500us  1.1070us  39.242us  cudaSetDevice
+                    0.00%  56.837us         1  56.837us  56.837us  56.837us  cuDeviceGetName
+                    0.00%  46.395us         1  46.395us  46.395us  46.395us  cudaStreamDestroy
+                    0.00%  12.190us         1  12.190us  12.190us  12.190us  cuDeviceGetPCIBusId
+                    0.00%  8.6880us         1  8.6880us  8.6880us  8.6880us  cudaEventCreate
+                    0.00%  3.2770us         1  3.2770us  3.2770us  3.2770us  cudaEventDestroy
+                    0.00%  3.1970us         1  3.1970us  3.1970us  3.1970us  cudaGetDeviceCount
+                    0.00%  2.5050us         3     835ns     317ns  1.5650us  cuDeviceGetCount
+                    0.00%  1.0920us         2     546ns     283ns     809ns  cuDeviceGet
+                    0.00%  1.0450us         1  1.0450us  1.0450us  1.0450us  cuModuleGetLoadingMode
+                    0.00%  1.0070us         2     503ns     461ns     546ns  cudaGetLastError
+                    0.00%     641ns         1     641ns     641ns     641ns  cuDeviceTotalMem
+                    0.00%     367ns         1     367ns     367ns     367ns  cuDeviceGetUuid
+
+==38295== Unified Memory profiling result:
+Device "Tesla V100-SXM2-16GB (0)"
+   Count  Avg Size  Min Size  Max Size  Total Size  Total Time  Name
+    8873  118.18KB  4.0000KB  0.9961MB  1.000000GB  135.6619ms  Host To Device
+    3072  170.67KB  4.0000KB  0.9961MB  512.0000MB  46.91182ms  Device To Host
+    5179         -         -         -           -  692.4099ms  Gpu page fault groups
+Total CPU Page faults: 4608

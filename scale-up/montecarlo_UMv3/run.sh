@@ -3,9 +3,6 @@ VERSION='UMv3'
 make clean
 make
 
-make clean
-make
-
 for NUM_GPU in 1 2
 do
     if [ $NUM_GPU -eq 1 ]; then
@@ -16,7 +13,7 @@ do
         export CUDA_VISIBLE_DEVICES=0,1,2,3
     fi
 
-    for size in 512 1024 8192 16384
+    for size in 512 1024 4096 8192
     do
         for scaling in strong weak
         do

@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Internal GPU-side data structures
 ////////////////////////////////////////////////////////////////////////////////
-#define MAX_OPTIONS (1024 * 1024 * 32)
+#define MAX_OPTIONS (1024 * 1024 * 64)
 
 // Preprocessed input option data
 typedef struct
@@ -183,9 +183,9 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
     // Prefetch um_OptionData on the CPU
     checkCudaErrors(cudaMemPrefetchAsync((__TOptionData *)(plan->um_OptionData), plan->optionCount * sizeof(__TOptionData), cudaCpuDeviceId, stream));
 
-    // If method is threaded (stream_id = 0) -> Wait for prefetch to finish
-    if(stream == cudaStream_t(0))
-        checkCudaErrors(cudaStreamSynchronize(stream));
+    // old improvement
+    //if(stream == cudaStream_t(0))
+    //    checkCudaErrors(cudaStreamSynchronize(stream));
 
     // Prefetch output data to the device
     checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), plan->device, stream));

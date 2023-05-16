@@ -107,8 +107,7 @@ StopWatchInterface **hTimer = NULL;
 
 float duration_init = 0;
 float duration_mc = 0;
-std::mutex mc_mutex, init_mutex;
-
+std::chrono::high_resolution_clock::time_point** times;
 static CUT_THREADPROC solverThread(TOptionPlan *plan)
 {   
     //Init GPU
@@ -145,15 +144,12 @@ static CUT_THREADPROC solverThread(TOptionPlan *plan)
     // Record MC time
     auto end_mc = std::chrono::high_resolution_clock::now();
 
-    // Print timing results
-    init_mutex.lock();
-    duration_init += std::chrono::duration_cast<std::chrono::duration<double>>(end_init - start_init).count();
-    init_mutex.unlock();
-
-    mc_mutex.lock();
-    duration_mc += std::chrono::duration_cast<std::chrono::duration<double>>(end_mc - start_mc).count();
-    mc_mutex.unlock();
-
+    int index = plan->device;
+    // Store timing results
+    times[0][index] = start_init;
+    times[1][index] = end_init;
+    times[2][index] = start_mc;
+    times[3][index] = end_mc;
 
     //Stop the timer
     sdkStopTimer(&hTimer[plan->device]);
@@ -353,7 +349,7 @@ int main(int argc, char **argv)
     checkCudaErrors(cudaGetDeviceCount(&GPU_N));
 
     int nOptions = 0;
-    if ( problemSize ==NULL)
+    if ( problemSize == NULL)
         nOptions = 512 * 512;
     else
         nOptions = std::stoi(problemSize)*std::stoi(problemSize);
@@ -446,6 +442,10 @@ int main(int argc, char **argv)
 
     if (use_threads || bqatest)
     {
+        times = new std::chrono::high_resolution_clock::time_point*[4];
+        for (int i = 0; i < 4; ++i) {
+            times[i] = new std::chrono::high_resolution_clock::time_point[GPU_N];
+        }
         //Start CPU thread for each GPU
         for (gpuIndex = 0; gpuIndex < GPU_N; gpuIndex++)
         {
@@ -454,6 +454,29 @@ int main(int argc, char **argv)
 
         printf("main(): waiting for GPU results...\n");
         cutWaitForThreads(threadID, GPU_N);
+
+        std::chrono::high_resolution_clock::time_point start_init = times[0][0];
+        std::chrono::high_resolution_clock::time_point end_init = times[1][0];
+        std::chrono::high_resolution_clock::time_point start_mc = times[2][0];
+        std::chrono::high_resolution_clock::time_point end_mc = times[3][0];
+        for (int i = 1; i < GPU_N; ++i) {
+            if (times[0][i] < start_init)
+                start_init = times[0][i];
+            if (times[1][i] > end_init)
+                end_init = times[1][i];
+            if (times[2][i] < start_mc)
+                start_mc = times[2][i];
+            if (times[3][i] > end_mc)
+                end_mc = times[3][i];
+        }    
+
+        duration_init = std::chrono::duration_cast<std::chrono::duration<double>>(end_init - start_init).count();
+        duration_mc = std::chrono::duration_cast<std::chrono::duration<double>>(end_mc - start_mc).count();
+
+        for (int i = 0; i < 4; ++i) {
+            delete[] times[i];
+        }
+        delete[] times;
 
         printf("main(): GPU statistics, threaded\n");
 

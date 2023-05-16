@@ -33,7 +33,7 @@ or<br />
 
 
 For seeting paranoid level:
-```sudo sh -c 'echo 1 >/proc/sys/kernel/perf_event_paranoid'```
+```sudo sh -c 'echo 1 >/proc/sys/kernel/perf_event_paranoid' ```
 ```cat /proc/sys/kernel/perf_event_paranoid ```
 
 ###========================================================================
