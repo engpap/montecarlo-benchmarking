@@ -3,7 +3,6 @@ package com.polimi.montecarlo;
 
 //import static org.junit.Assert.assertEquals;
 import org.graalvm.polyglot.Value;
-import com.polimi.montecarlo.Benchmark;
 
 public class B1 extends Benchmark {
 
