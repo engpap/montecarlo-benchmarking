@@ -7,13 +7,11 @@
   "debug": true,
   "nvprof_profile": false,
   "num_elem": {
-    "B1": [160000000, 250000000, 500000000, 800000000, 950000000],
-    "MonteCarlo" : [1048576]
+    "B1": [160000000, 250000000, 500000000, 800000000, 950000000]
   },
   "benchmarks": ["B1"],
   "numBlocks": {
-    "B1":  64,
-    "MonteCarlo" : -1
+    "B1":  64
   },
   "exec_policies" : ["async"],
   "dependency_policies": ["with-const"],
