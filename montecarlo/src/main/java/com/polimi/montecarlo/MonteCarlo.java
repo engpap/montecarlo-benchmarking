@@ -4,7 +4,7 @@ import org.graalvm.polyglot.Value;
 
 public class MonteCarlo extends Benchmark{
 
-    private static final String RNG_SETUP_STATES = ""+
+    private static final String RNG_SETUP_STATES_KERNEL = ""+
     "static __global__ void rngSetupStates("+
     "    curandState *rngState,"+
     "    int device_id)"+
@@ -16,7 +16,7 @@ public class MonteCarlo extends Benchmark{
     "    curand_init(blockIdx.x + gridDim.x * device_id, threadIdx.x, 0, &rngState[tid]);"+
     "}";
 
-    private static final String MONTECARLO_ONE_BLOCK_PER_OPTION = ""+
+    private static final String MONTECARLO_ONE_BLOCK_PER_OPTION_KERNEL = ""+
     "static __global__ void MonteCarloOneBlockPerOption("+
     "    curandState * __restrict rngStates,"+
     "    const __TOptionData * __restrict d_OptionData,"+
@@ -72,13 +72,23 @@ public class MonteCarlo extends Benchmark{
     "    }"+
     "}";
 
+    /// Kernels
     private Value monteCarloOneBlockPerOptionKernelFunction;
     private Value rngSetupStatesKernelFunction;
-    private Value optionData, callValue, rngStates;
 
-    public MonteCarlo(BenchmarkConfig currentConfig) {
-        super(currentConfig);
-    }
+    /// __TOptionData
+    private Value optionData_S, optionData_X, optionData_MuByT, optionData_VBySqrtT;
+
+    /// __TOptionValue
+    private Value optionValue_Expected, optionValue_Confidence;
+
+    /// rngStates
+    private Value rngStates;
+
+    /// Constants
+    private static final int THREAD_N = 256;
+
+    public MonteCarlo(BenchmarkConfig currentConfig) {super(currentConfig);}
 
     @Override
     protected void initializeTest(int iteration) {
@@ -86,12 +96,44 @@ public class MonteCarlo extends Benchmark{
         throw new UnsupportedOperationException("Unimplemented method 'initializeTest'");
     }
 
+    /**
+     * Resembles initMonteCarloGPU.
+     * 
+    */ 
     @Override
     protected void allocateTest(int iteration) {
-        // Alloc arrays
-        //optionData = requestArray("__TOptionData", config.optionCount);
-        //callValue = requestArray("__TOptionValue", config.optionCount);
+
+        // Allocate __TOptionData's arrays: equivalent to allocate plan->um_OptionData,
+        optionData_S = requestArray("float", config.size);
+        optionData_X = requestArray("float", config.size);
+        optionData_MuByT = requestArray("float", config.size);
+        optionData_VBySqrtT = requestArray("float", config.size);
+
+        // Allocate __TOptionValue's arrays: equivalent to allocate plan->um_CallValue,
+        optionValue_Expected = requestArray("float", config.size);
+        optionValue_Confidence = requestArray("float", config.size);
+
+        /// TODO: Allocate rngStates array
+        //rngStates = requestArray("", config.numBlocks*THREAD_N);
+
+        // Context initialization
+        Value buildKernel = context.eval("grcuda", "buildkernel");
+        
+        // TODO: kernel modification and then exec call
+        //rngSetupStatesKernelFunction = buildKernel.execute(RNG_SETUP_STATES_KERNEL, "rngSetupStates", "pointer, sint32");
+
     }
+
+
+
+
+
+
+
+
+
+
+
 
     @Override
     protected void resetIteration(int iteration) {

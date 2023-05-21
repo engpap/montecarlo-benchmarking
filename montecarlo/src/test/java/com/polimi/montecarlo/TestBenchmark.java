@@ -118,6 +118,7 @@ public class TestBenchmark
 
     /*
     This method reflects the pattern of benchmark_wrapper.py present in the python suite.
+    Size: for MC is optionCount
     */
     private void iterateAllPossibleConfig(Config parsedConfig) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, JsonProcessingException {
         String BANDWIDTH_MATRIX;
