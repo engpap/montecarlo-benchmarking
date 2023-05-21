@@ -134,21 +134,12 @@ extern "C" void initMonteCarloGPU(TOptionPlan *plan)
 {
     checkCudaErrors(cudaMallocManaged(&plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount)));
     checkCudaErrors(cudaMallocManaged(&plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount)));
-
-    // Applications can use cudaMemAdviseSetAccessedBy performance hint with cudaCpuDeviceId to enable direct access of GPU memory on supported systems.
-    //checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseSetAccessedBy, cudaCpuDeviceId)); 
-    
-    // 4120 CPU page faults
-    // checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseSetReadMostly, plan->device)); 
-    
-
     
     // Allocate internal device memory
     // Allocate states for pseudo random number generators
     checkCudaErrors(cudaMallocManaged((void **)&plan->rngStates,
                                       plan->gridSize * THREAD_N * sizeof(curandState)));
 
-    // THIS WORKS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! REMOVE COMMENT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     cudaMemAdvise(plan->rngStates, plan->gridSize * THREAD_N * sizeof(curandState), cudaMemAdviseSetPreferredLocation, plan->device);
 
     // place each device pathN random numbers apart on the random number sequence
@@ -159,6 +150,8 @@ extern "C" void initMonteCarloGPU(TOptionPlan *plan)
 // Compute statistics and deallocate internal device memory
 extern "C" void closeMonteCarloGPU(TOptionPlan *plan)
 {
+
+    checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId));
 
     for (int i = 0; i < plan->optionCount; i++)
     {

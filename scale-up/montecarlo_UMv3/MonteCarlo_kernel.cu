@@ -190,7 +190,6 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
     //if(stream == cudaStream_t(0))
     //    checkCudaErrors(cudaStreamSynchronize(stream));
 
-
     // Prefetch output data to the device
     checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), plan->device, stream));
 
@@ -209,10 +208,7 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         um_optionData[i].VBySqrtT = (real)VBySqrtT;
     }
 
-    // Prefetch the data to the device (GPU) memory 
-    //checkCudaErrors(cudaMemPrefetchAsync((__TOptionData *)(plan->um_OptionData), plan->optionCount * sizeof(__TOptionData), plan->device, stream));
-
-    // useful because instead of moving optiondata to the gpu they can access it while it resides on the host memory (no migration required)
+    // useful because instead of moving optiondata to the gpus they can access it while it resides on the host memory (no migration required)
     checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseSetAccessedBy, plan->device)); 
 
     MonteCarloOneBlockPerOption<<<plan->gridSize, THREAD_N, 0, stream>>>(
@@ -225,4 +221,5 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
 
     // Prefetch um_CallValue on the CPU
     checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), cudaCpuDeviceId));
+    
 }
