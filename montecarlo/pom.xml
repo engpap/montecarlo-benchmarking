@@ -8,15 +8,12 @@
   <artifactId>montecarlo</artifactId>
   <version>1.0-SNAPSHOT</version>
   <name>montecarlo</name>
-  <!-- FIXME change it to the project's website -->
-  <url>http://www.example.com</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.7</maven.compiler.source>
-    <maven.compiler.target>1.7</maven.compiler.target>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
   </properties>
-
 
   <dependencies>
 
@@ -37,7 +34,7 @@
     <dependency>
         <groupId>org.graalvm.sdk</groupId>
         <artifactId>graal-sdk</artifactId>
-        <version>22.1.0</version>
+        <version>22.3.2</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations -->
@@ -53,8 +50,14 @@
         <artifactId>jackson-databind</artifactId>
         <version>2.15.0</version>
     </dependency>
-    
 
+  
+    <!-- https://mvnrepository.com/artifact/com.oracle.truffle/truffle-api -->
+    <dependency>
+        <groupId>com.oracle.truffle</groupId>
+        <artifactId>truffle-api</artifactId>
+        <version>1.0.0-rc7</version>
+    </dependency>
 
 
   
@@ -109,14 +112,15 @@
         </plugin>
 
         <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-compiler-plugin</artifactId>
-    <version>3.8.1</version>
-    <configuration>
-        <release>8</release>
-    </configuration>
-</plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.8.1</version>
+          <configuration>
+              <release>8</release>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
+  
 </project>

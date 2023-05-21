@@ -20,16 +20,22 @@ import java.util.*;
 
 public class TestBenchmark 
 {
-
+    private String GRCUDA_HOME = System.getenv("GRCUDA_HOME");
     private String PATH;
     private GPU currentGPU;
     private String results_path;
 
 
+    /**
+     * This method is called before each test for: 
+     *  1) setting up the results folder
+     *  2) computing the bandwidth matrix if necessary
+     *  3) detecting the GPU model installed in the system & storing it in currentGPU variable
+     */
     @Before
     public void init() throws IOException, InterruptedException {
         //create the folder to store the json results of the benchmarks
-        PATH = "/home/ubuntu/montecarlo-benchmarking/montecarlo/src/test/java/it/necst/grcuda/benchmark";
+        PATH = "/home/ubuntu/montecarlo-benchmarking/montecarlo/src/test/java/com/polimi/montecarlo";
         Format formatter = new SimpleDateFormat("yyyy_MM_dd_hh_mm_ss");
         Date currentDate = new Date();
         String results_path = "./results/"+formatter.format(currentDate);
@@ -39,6 +45,19 @@ public class TestBenchmark
         while(!new File(results_path).mkdirs()){
             results_path = "./results/"+formatter.format(currentDate)+"_("+i+")";
             i++;
+        }
+        
+         // Compute BANDWIDTH MATRIX if necessary
+        String BANDWIDTH_MATRIX_PATH = GRCUDA_HOME+"/projects/resources/connection_graph/datasets/connection_graph.csv";
+        File f = new File(BANDWIDTH_MATRIX_PATH);
+        if(!f.exists() && !f.isDirectory()) {
+            // we need to compute the interconnection bandwidth matrix
+            ProcessBuilder builder = new ProcessBuilder();
+            builder.directory(new File(GRCUDA_HOME+"/projects/resources/connection_graph"));
+            builder.command("bash -c ./run.sh".split("\\s+"));
+            Process process = builder.start();
+            int exitCode = process.waitFor();
+            assertEquals("Return value should be 0", 0, exitCode);
         }
 
         // Get the model of GPUs installed in the system
@@ -50,7 +69,6 @@ public class TestBenchmark
         assertEquals("Return value should be 0", 0, exitCode);
         BufferedReader br=new BufferedReader(new InputStreamReader(process.getInputStream()));
         String line;
-        StringBuilder sb = new StringBuilder();
         br.readLine(); // discard "name" at the beginning of the output
         while((line=br.readLine())!=null){
             GPU g = GPU.valueOfName(line);
@@ -61,8 +79,12 @@ public class TestBenchmark
         this.currentGPU = detectedGPUS.iterator().next();
     }
 
+
+    /**
+     * This method is called to run the benchmark on the V100 GPU.
+     */
     @Test
-    public void runAll_V100_multi() throws FileNotFoundException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, JsonProcessingException {
+    public void run_V100_multi() throws FileNotFoundException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, JsonProcessingException {
         assumeTrue(this.currentGPU.equals(GPU.V100));
 
         // get the configuration for the selected GPU into a Config class
@@ -75,13 +97,32 @@ public class TestBenchmark
         iterateAllPossibleConfig(parsedConfig);
     }
 
-     /*
+
+    /**
+     * This method is called to run the benchmark on the P100 GPU.
+    */
+    @Test
+    public void run_P100() throws FileNotFoundException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, JsonProcessingException {
+        assumeTrue(this.currentGPU.equals(GPU.P100));
+
+        // get the configuration for the selected GPU into a Config class
+        String CONFIG_PATH = PATH + "/config_P100.json";
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        JsonReader reader = new JsonReader(new FileReader(CONFIG_PATH));
+        Config parsedConfig = gson.fromJson(reader, Config.class);
+        System.out.println(gson.toJson(parsedConfig)); // print the current configuration
+
+        iterateAllPossibleConfig(parsedConfig);
+    }
+
+
+    /*
     This method reflects the pattern of benchmark_wrapper.py present in the python suite.
     */
     private void iterateAllPossibleConfig(Config parsedConfig) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, JsonProcessingException {
         String BANDWIDTH_MATRIX;
         ArrayList<String> dp, nsp, psp, cdp;
-        ArrayList<Integer> ng, block_sizes;
+        ArrayList<Integer> ng;
         Integer nb; // number of blocks
         Integer blockSize1D, blockSize2D;
         int num_iter = parsedConfig.num_iter;
@@ -93,11 +134,11 @@ public class TestBenchmark
             for(Integer curr_size : sizes){ // given a specific input size iterate over the various execution policies
                 for(String policy : parsedConfig.exec_policies){
                     if(policy.equals("sync")){
-                        dp = new ArrayList<>(List.of(parsedConfig.dependency_policies.get(0)));
-                        nsp = new ArrayList<>(List.of(parsedConfig.new_stream_policies.get(0)));
-                        psp = new ArrayList<>(List.of(parsedConfig.parent_stream_policies.get(0)));
-                        cdp = new ArrayList<>(List.of(parsedConfig.choose_device_policies.get(0)));
-                        ng = new ArrayList<>(List.of(1));
+                        dp = new ArrayList<>(Arrays.asList(parsedConfig.dependency_policies.get(0)));
+                        nsp = new ArrayList<>(Arrays.asList(parsedConfig.new_stream_policies.get(0)));
+                        psp = new ArrayList<>(Arrays.asList(parsedConfig.parent_stream_policies.get(0)));
+                        cdp = new ArrayList<>(Arrays.asList(parsedConfig.choose_device_policies.get(0)));
+                        ng = new ArrayList<>(Arrays.asList(1));
                     }
                     else{
                         dp = parsedConfig.dependency_policies;
@@ -108,10 +149,10 @@ public class TestBenchmark
                     }
                     for(int num_gpu : ng){
                         if(policy.equals("async") && num_gpu == 1){
-                            dp = new ArrayList<>(List.of(parsedConfig.dependency_policies.get(0)));
-                            nsp = new ArrayList<>(List.of(parsedConfig.new_stream_policies.get(0)));
-                            psp = new ArrayList<>(List.of(parsedConfig.parent_stream_policies.get(0)));
-                            cdp = new ArrayList<>(List.of(parsedConfig.choose_device_policies.get(0)));
+                            dp = new ArrayList<>(Arrays.asList(parsedConfig.dependency_policies.get(0)));
+                            nsp = new ArrayList<>(Arrays.asList(parsedConfig.new_stream_policies.get(0)));
+                            psp = new ArrayList<>(Arrays.asList(parsedConfig.parent_stream_policies.get(0)));
+                            cdp = new ArrayList<>(Arrays.asList(parsedConfig.choose_device_policies.get(0)));
                         }
                         else{
                             dp = parsedConfig.dependency_policies;
@@ -123,7 +164,7 @@ public class TestBenchmark
                             for(Boolean p : parsedConfig.prefetch ){
                                 for(Boolean s : parsedConfig.stream_attach){
                                     for(Boolean t : parsedConfig.time_computation){
-                                        //BANDWIDTH_MATRIX= GRCUDA_HOME+"/projects/resources/connection_graph/datasets/connection_graph.csv";
+                                        BANDWIDTH_MATRIX= GRCUDA_HOME+"/projects/resources/connection_graph/datasets/connection_graph.csv";
                                         for(String dependency_policy : dp){
                                             for(String new_stream_policy : nsp){
                                                 for(String parent_stream_policy : psp){
@@ -152,7 +193,7 @@ public class TestBenchmark
                                                         config.totIter = num_iter;
                                                         config.forceStreamAttach = s;
                                                         config.memAdvisePolicy = m;
-                                                        //config.bandwidthMatrix = BANDWIDTH_MATRIX;
+                                                        config.bandwidthMatrix = BANDWIDTH_MATRIX;
                                                         config.enableComputationTimers =t;
                                                         config.nvprof_profile = parsedConfig.nvprof_profile;
                                                         config.gpuModel = this.currentGPU.name;
@@ -176,10 +217,10 @@ public class TestBenchmark
         }
     }
 
-    private Benchmark createBench(BenchmarkConfig config) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    private Benchmark createBench(BenchmarkConfig config) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {       
         // Courtesy of https://stackoverflow.com/questions/7495785/java-how-to-instantiate-a-class-from-string
-
-        Class currBenchClass = Class.forName("it.necst.grcuda.benchmark.bench."+config.benchmarkName);
+        
+        Class currBenchClass = Class.forName("com.polimi.montecarlo."+config.benchmarkName);
 
         Class[] types = {BenchmarkConfig.class};
         Constructor constructor = currBenchClass.getConstructor(types);
@@ -187,6 +228,7 @@ public class TestBenchmark
         Object[] parameters = {config};
 
         return (Benchmark) constructor.newInstance(parameters);
+    
 
     }
 }
