@@ -1,5 +1,5 @@
 {
-  "num_iter": 30,
+  "num_iter": 2,
   "reInit": false,
   "randomInit": false,
   "cpuValidation": false,
@@ -7,7 +7,7 @@
   "debug": true,
   "nvprof_profile": false,
   "num_elem": {
-    "B1": [160000000, 250000000, 500000000, 800000000, 950000000],
+    "B1": [160000000],
     "MonteCarlo" : [1048576]
   },
   "benchmarks": ["B1"],

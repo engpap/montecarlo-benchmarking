@@ -1,0 +1,2 @@
+config.size = optionCount
+config.numBlocks = gridSize
