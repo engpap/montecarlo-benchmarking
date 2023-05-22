@@ -132,9 +132,9 @@ static __global__ void rngSetupStates(
 
 extern "C" void initMonteCarloGPU(TOptionPlan *plan)
 {
+    // Allocate input and output data
     checkCudaErrors(cudaMallocManaged(&plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount)));
     checkCudaErrors(cudaMallocManaged(&plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount)));
-    // Allocate internal device memory
     // Allocate states for pseudo random number generators
     checkCudaErrors(cudaMallocManaged((void **)&plan->rngStates,
                                       plan->gridSize * THREAD_N * sizeof(curandState)));
@@ -173,24 +173,16 @@ extern "C" void closeMonteCarloGPU(TOptionPlan *plan)
 // Main computations
 extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
 {
-
     if (plan->optionCount <= 0 || plan->optionCount > MAX_OPTIONS)
     {
         printf("MonteCarloGPU(): bad option count.\n");
         return;
     }
 
-    // Prefetch the data to the device (GPU) memory 
-    //checkCudaErrors(cudaMemPrefetchAsync((__TOptionData *)(plan->um_OptionData), plan->optionCount * sizeof(__TOptionData), cudaCpuDeviceId, stream));
-
-    // better than prefetch -> causes some page faults but should require less time to migrate data than prefetch
+    // Set the CPU as the preferred location for the input data
     checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId)); 
 
-    // No longer required since we do not prefetch
-    //if(stream == cudaStream_t(0))
-    //    checkCudaErrors(cudaStreamSynchronize(stream));
-
-    // Prefetch output data to the device
+    // Prefetch the output data to the device
     checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), plan->device, stream));
 
     __TOptionData *um_optionData = (__TOptionData *)plan->um_OptionData;
@@ -208,7 +200,7 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         um_optionData[i].VBySqrtT = (real)VBySqrtT;
     }
 
-    // useful because instead of moving optiondata to the gpus they can access it while it resides on the host memory (no migration required)
+    // Set the input data to be accessible by the device through a page table mapping
     checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseSetAccessedBy, plan->device)); 
 
     MonteCarloOneBlockPerOption<<<plan->gridSize, THREAD_N, 0, stream>>>(
@@ -219,7 +211,6 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         plan->optionCount);
     getLastCudaError("MonteCarloOneBlockPerOption() execution failed\n");
 
-    // Prefetch um_CallValue on the CPU
+    // Prefetch the output data to the CPU
     checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), cudaCpuDeviceId));
-    
 }

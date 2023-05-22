@@ -1,0 +1,50 @@
+==46824== NVPROF is profiling process 46824, command: ./MonteCarlo --scaling=weak --method=streamed --size=8192
+==46824== Profiling application: ./MonteCarlo --scaling=weak --method=streamed --size=8192
+==46824== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:  100.00%  273.174s         4  68.2935s  67.5856s  68.8123s  MonteCarloOneBlockPerOption(curandStateXORWOW*, __TOptionData const *, __TOptionValue*, int, int)
+                    0.00%  11.399ms         4  2.8496ms  2.8439ms  2.8559ms  rngSetupStates(curandStateXORWOW*, int)
+      API calls:   96.98%  68.9155s         4  17.2289s  261.46ms  66.0905s  cudaEventSynchronize
+                    1.15%  818.51ms        12  68.209ms  587.58us  146.97ms  cudaFree
+                    1.03%  731.37ms         4  182.84ms  175.69ms  198.94ms  cudaStreamCreate
+                    0.77%  545.38ms         8  68.173ms  13.075us  140.28ms  cudaMemAdvise
+                    0.03%  22.124ms        12  1.8437ms  33.059us  21.625ms  cudaMallocManaged
+                    0.02%  16.797ms        12  1.3998ms  215.71us  3.6123ms  cudaMemPrefetchAsync
+                    0.01%  5.3798ms        16  336.24us  313.96us  392.42us  cudaGetDeviceProperties
+                    0.00%  2.8469ms         4  711.74us  407.83us  846.08us  cudaDeviceSynchronize
+                    0.00%  1.5378ms       404  3.8060us     173ns  251.34us  cuDeviceGetAttribute
+                    0.00%  310.12us         8  38.764us  13.860us  57.671us  cudaLaunchKernel
+                    0.00%  138.96us         4  34.739us  29.809us  48.223us  cuDeviceGetName
+                    0.00%  105.61us        28  3.7710us     508ns  15.042us  cudaSetDevice
+                    0.00%  105.26us         4  26.315us  24.564us  29.778us  cudaStreamDestroy
+                    0.00%  45.416us         4  11.354us  8.6070us  18.142us  cudaEventRecord
+                    0.00%  22.032us         4  5.5080us  1.8250us  14.437us  cuDeviceGetPCIBusId
+                    0.00%  17.783us         4  4.4450us  3.0420us  7.1510us  cudaEventCreate
+                    0.00%  12.857us         4  3.2140us  3.0040us  3.6370us  cudaEventDestroy
+                    0.00%  4.2050us         8     525ns     281ns     761ns  cudaGetLastError
+                    0.00%  3.2270us         3  1.0750us     301ns  2.3660us  cuDeviceGetCount
+                    0.00%  2.7580us         8     344ns     171ns     739ns  cuDeviceGet
+                    0.00%  1.5500us         4     387ns     341ns     482ns  cuDeviceTotalMem
+                    0.00%  1.2050us         1  1.2050us  1.2050us  1.2050us  cudaGetDeviceCount
+                    0.00%  1.0760us         4     269ns     211ns     327ns  cuDeviceGetUuid
+                    0.00%     422ns         1     422ns     422ns     422ns  cuModuleGetLoadingMode
+
+==46824== Unified Memory profiling result:
+Device "Tesla V100-SXM2-16GB (0)"
+   Count  Avg Size  Min Size  Max Size  Total Size  Total Time  Name
+     256  2.0000MB  2.0000MB  2.0000MB  512.0000MB  42.46817ms  Device To Host
+     512  2.0000MB  2.0000MB  2.0000MB  1.000000GB           -  Remote mapping from device
+Device "Tesla V100-SXM2-16GB (1)"
+   Count  Avg Size  Min Size  Max Size  Total Size  Total Time  Name
+     256  2.0000MB  2.0000MB  2.0000MB  512.0000MB  43.16386ms  Device To Host
+     512  2.0000MB  2.0000MB  2.0000MB  1.000000GB           -  Remote mapping from device
+Device "Tesla V100-SXM2-16GB (2)"
+   Count  Avg Size  Min Size  Max Size  Total Size  Total Time  Name
+     256  2.0000MB  2.0000MB  2.0000MB  512.0000MB  42.48034ms  Device To Host
+     512  2.0000MB  2.0000MB  2.0000MB  1.000000GB           -  Remote mapping from device
+Device "Tesla V100-SXM2-16GB (3)"
+   Count  Avg Size  Min Size  Max Size  Total Size  Total Time  Name
+     256  2.0000MB  2.0000MB  2.0000MB  512.0000MB  43.34553ms  Device To Host
+     512  2.0000MB  2.0000MB  2.0000MB  1.000000GB           -  Remote mapping from device
+Total CPU Page faults: 2048
+Total remote mappings to CPU: 2048

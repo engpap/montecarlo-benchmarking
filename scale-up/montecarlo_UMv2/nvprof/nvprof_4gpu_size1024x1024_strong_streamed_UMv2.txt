@@ -1,0 +1,53 @@
+==32451== NVPROF is profiling process 32451, command: ./MonteCarlo --scaling=strong --method=streamed --size=1024
+==32451== Profiling application: ./MonteCarlo --scaling=strong --method=streamed --size=1024
+==32451== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   97.70%  1.04115s         4  260.29ms  256.32ms  262.74ms  MonteCarloOneBlockPerOption(curandStateXORWOW*, __TOptionData const *, __TOptionValue*, int, int)
+                    2.30%  24.550ms         4  6.1375ms  5.9756ms  6.4289ms  rngSetupStates(curandStateXORWOW*, int)
+      API calls:   70.27%  727.73ms         4  181.93ms  174.49ms  199.87ms  cudaStreamCreate
+                   25.16%  260.54ms         4  65.135ms  6.9010us  250.81ms  cudaEventSynchronize
+                    2.21%  22.905ms        12  1.9088ms  34.498us  21.608ms  cudaMallocManaged
+                    0.81%  8.4290ms        12  702.42us  310.58us  2.0995ms  cudaFree
+                    0.58%  5.9729ms         4  1.4932ms  459.21us  3.9034ms  cudaDeviceSynchronize
+                    0.53%  5.4959ms        16  343.49us  314.62us  410.11us  cudaGetDeviceProperties
+                    0.24%  2.5100ms        20  125.50us  4.1780us  593.59us  cudaMemAdvise
+                    0.14%  1.4974ms       404  3.7060us     175ns  197.82us  cuDeviceGetAttribute
+                    0.02%  209.38us         8  26.172us  18.650us  41.383us  cudaLaunchKernel
+                    0.01%  155.27us         4  38.818us  29.964us  52.473us  cuDeviceGetName
+                    0.01%  72.692us         4  18.173us  14.594us  27.580us  cudaStreamDestroy
+                    0.01%  68.944us        28  2.4620us     482ns  10.824us  cudaSetDevice
+                    0.00%  23.030us         4  5.7570us  2.5260us  14.238us  cuDeviceGetPCIBusId
+                    0.00%  22.526us         4  5.6310us  3.5710us  11.085us  cudaEventCreate
+                    0.00%  20.214us         4  5.0530us  4.2030us  6.7100us  cudaEventRecord
+                    0.00%  8.7140us         4  2.1780us  1.7670us  3.1810us  cudaEventDestroy
+                    0.00%  5.2420us         8     655ns     177ns  2.0790us  cuDeviceGet
+                    0.00%  3.4170us         8     427ns     300ns     527ns  cudaGetLastError
+                    0.00%  3.0170us         3  1.0050us     347ns  1.9940us  cuDeviceGetCount
+                    0.00%  2.5060us         4     626ns     248ns  1.6130us  cuDeviceGetUuid
+                    0.00%  1.6690us         4     417ns     296ns     583ns  cuDeviceTotalMem
+                    0.00%  1.0180us         1  1.0180us  1.0180us  1.0180us  cudaGetDeviceCount
+                    0.00%  1.0150us         1  1.0150us  1.0150us  1.0150us  cuModuleGetLoadingMode
+
+==32451== Unified Memory profiling result:
+Device "Tesla V100-SXM2-16GB (0)"
+   Count  Avg Size  Min Size  Max Size  Total Size  Total Time  Name
+      12  170.67KB  4.0000KB  0.9961MB  2.000000MB  210.5600us  Device To Host
+      18         -         -         -           -  4.382571ms  Gpu page fault groups
+       2  2.0000MB  2.0000MB  2.0000MB  4.000000MB           -  Remote mapping from device
+Device "Tesla V100-SXM2-16GB (1)"
+   Count  Avg Size  Min Size  Max Size  Total Size  Total Time  Name
+      12  170.67KB  4.0000KB  0.9961MB  2.000000MB  226.3050us  Device To Host
+      17         -         -         -           -  4.034247ms  Gpu page fault groups
+       2  2.0000MB  2.0000MB  2.0000MB  4.000000MB           -  Remote mapping from device
+Device "Tesla V100-SXM2-16GB (2)"
+   Count  Avg Size  Min Size  Max Size  Total Size  Total Time  Name
+      12  170.67KB  4.0000KB  0.9961MB  2.000000MB  186.6240us  Device To Host
+      17         -         -         -           -  4.071845ms  Gpu page fault groups
+       2  2.0000MB  2.0000MB  2.0000MB  4.000000MB           -  Remote mapping from device
+Device "Tesla V100-SXM2-16GB (3)"
+   Count  Avg Size  Min Size  Max Size  Total Size  Total Time  Name
+      12  170.67KB  4.0000KB  0.9961MB  2.000000MB  186.1440us  Device To Host
+      18         -         -         -           -  4.000191ms  Gpu page fault groups
+       2  2.0000MB  2.0000MB  2.0000MB  4.000000MB           -  Remote mapping from device
+Total CPU Page faults: 32
+Total remote mappings to CPU: 8

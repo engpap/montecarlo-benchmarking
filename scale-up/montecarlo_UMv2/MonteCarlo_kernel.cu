@@ -132,17 +132,17 @@ static __global__ void rngSetupStates(
 
 extern "C" void initMonteCarloGPU(TOptionPlan *plan)
 {
+    // Allocate input and output data
     checkCudaErrors(cudaMallocManaged(&plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount)));
     checkCudaErrors(cudaMallocManaged(&plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount)));
-    
-    // Allocate internal device memory
     // Allocate states for pseudo random number generators
     checkCudaErrors(cudaMallocManaged((void **)&plan->rngStates,
                                       plan->gridSize * THREAD_N * sizeof(curandState)));
 
+    // Set the GPU as the preferred location for the rngStates
     cudaMemAdvise(plan->rngStates, plan->gridSize * THREAD_N * sizeof(curandState), cudaMemAdviseSetPreferredLocation, plan->device);
 
-    // place each device pathN random numbers apart on the random number sequence
+    // Place each device pathN random numbers apart on the random number sequence
     rngSetupStates<<<plan->gridSize, THREAD_N>>>(plan->rngStates, plan->device);
     getLastCudaError("rngSetupStates kernel failed.\n");
 }
@@ -150,7 +150,7 @@ extern "C" void initMonteCarloGPU(TOptionPlan *plan)
 // Compute statistics and deallocate internal device memory
 extern "C" void closeMonteCarloGPU(TOptionPlan *plan)
 {
-
+    // Set the CPU as the preferred location for the output data
     checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId));
 
     for (int i = 0; i < plan->optionCount; i++)
@@ -182,6 +182,7 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         return;
     }
 
+    // Set CPU as the preferred location for the input data
     checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId)); 
 
     __TOptionData *optionData = (__TOptionData *)plan->um_OptionData;
@@ -199,16 +200,11 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         optionData[i].VBySqrtT = (real)VBySqrtT;
     }
 
+    // Set the input data to be accessible by the device through a page table mapping
     checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseSetAccessedBy, plan->device)); 
 
-    // 1
+    // Set the GPU as the preferred location for the output data 
     checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseSetPreferredLocation, plan->device));
-
-    // 2
-    //checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId));
-
-    // 2
-    //checkCudaErrors(cudaMemAdvise(plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount), cudaMemAdviseSetAccessedBy, plan->device));
 
     MonteCarloOneBlockPerOption<<<plan->gridSize, THREAD_N, 0, stream>>>(
         plan->rngStates,

@@ -1,0 +1,51 @@
+==19847== NVPROF is profiling process 19847, command: ./MonteCarlo --scaling=weak --method=streamed --size=8192
+==19847== Profiling application: ./MonteCarlo --scaling=weak --method=streamed --size=8192
+==19847== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   99.98%  273.792s         4  68.4481s  67.7027s  68.8928s  MonteCarloOneBlockPerOption(curandStateXORWOW*, __TOptionData const *, __TOptionValue*, int, int)
+                    0.02%  42.564ms         4  10.641ms  9.8506ms  12.247ms  rngSetupStates(curandStateXORWOW*, int)
+      API calls:   97.91%  68.8145s         4  17.2036s  364.64ms  65.7585s  cudaEventSynchronize
+                    1.04%  732.91ms         4  183.23ms  175.71ms  199.17ms  cudaStreamCreate
+                    0.99%  695.47ms        12  57.956ms  703.15us  107.45ms  cudaFree
+                    0.03%  23.875ms        12  1.9896ms  38.379us  21.800ms  cudaMallocManaged
+                    0.01%  9.8421ms         4  2.4605ms  9.4760us  9.0309ms  cudaDeviceSynchronize
+                    0.01%  5.6101ms        16  350.63us  314.76us  437.28us  cudaGetDeviceProperties
+                    0.00%  1.3927ms       404  3.4470us     176ns  165.39us  cuDeviceGetAttribute
+                    0.00%  374.30us         8  46.787us  27.776us  60.290us  cudaLaunchKernel
+                    0.00%  138.63us         4  34.657us  30.366us  46.979us  cuDeviceGetName
+                    0.00%  119.47us         4  29.867us  26.715us  32.714us  cudaStreamDestroy
+                    0.00%  94.436us        28  3.3720us     554ns  13.934us  cudaSetDevice
+                    0.00%  35.385us         4  8.8460us  8.1050us  9.5630us  cudaEventRecord
+                    0.00%  22.126us         4  5.5310us  1.4750us  15.288us  cuDeviceGetPCIBusId
+                    0.00%  18.242us         4  4.5600us  3.6580us  6.2070us  cudaEventCreate
+                    0.00%  13.897us         4  3.4740us  2.7900us  4.4550us  cudaEventDestroy
+                    0.00%  5.1280us         8     641ns     495ns     863ns  cudaGetLastError
+                    0.00%  2.7520us         8     344ns     167ns     958ns  cuDeviceGet
+                    0.00%  1.7620us         3     587ns     286ns  1.1670us  cuDeviceGetCount
+                    0.00%  1.5380us         4     384ns     310ns     426ns  cuDeviceTotalMem
+                    0.00%  1.0070us         1  1.0070us  1.0070us  1.0070us  cudaGetDeviceCount
+                    0.00%     960ns         4     240ns     203ns     317ns  cuDeviceGetUuid
+                    0.00%     480ns         1     480ns     480ns     480ns  cuModuleGetLoadingMode
+
+==19847== Unified Memory profiling result:
+Device "Tesla V100-SXM2-16GB (0)"
+   Count  Avg Size  Min Size  Max Size  Total Size  Total Time  Name
+    2926  119.78KB  4.0000KB  0.9961MB  342.2500MB  46.96795ms  Host To Device
+    3070  170.76KB  4.0000KB  0.9961MB  511.9375MB  46.46415ms  Device To Host
+    4261         -         -         -           -  608.8750ms  Gpu page fault groups
+Device "Tesla V100-SXM2-16GB (1)"
+   Count  Avg Size  Min Size  Max Size  Total Size  Total Time  Name
+    2991  117.13KB  4.0000KB  0.9961MB  342.1250MB  41.40148ms  Host To Device
+    3072  170.67KB  4.0000KB  0.9961MB  512.0000MB  47.76582ms  Device To Host
+    4089         -         -         -           -  646.1361ms  Gpu page fault groups
+Device "Tesla V100-SXM2-16GB (2)"
+   Count  Avg Size  Min Size  Max Size  Total Size  Total Time  Name
+    5288  120.08KB  4.0000KB  0.9961MB  620.1250MB  80.96272ms  Host To Device
+    3072  170.67KB  4.0000KB  0.9961MB  512.0000MB  47.82186ms  Device To Host
+    4269         -         -         -           -  589.7452ms  Gpu page fault groups
+Device "Tesla V100-SXM2-16GB (3)"
+   Count  Avg Size  Min Size  Max Size  Total Size  Total Time  Name
+    5909  118.43KB  4.0000KB  0.9961MB  683.3750MB  81.63095ms  Host To Device
+    3072  170.67KB  4.0000KB  0.9961MB  512.0000MB  48.41119ms  Device To Host
+    4734         -         -         -           -  636.8256ms  Gpu page fault groups
+Total CPU Page faults: 18432
