@@ -34,7 +34,9 @@ public class BenchmarkConfig {
     public boolean forceStreamAttach;
     public boolean enableComputationTimers;
     public int numGpus;
+    public int deviceId; // ADDED TO ADAPT IT TO MC
     public String memAdvisePolicy;
+    public String scalingChoice;
     @JsonIgnore public String bandwidthMatrix;
     // Debug parameters
     public boolean debug;
@@ -69,6 +71,7 @@ public class BenchmarkConfig {
                 ", enableComputationTimers=" + enableComputationTimers +
                 ", numGpus=" + numGpus +
                 ", memAdvisePolicy='" + memAdvisePolicy + '\'' +
+                ", scalingChoice='" + scalingChoice + '\'' +
                 ", bandwidthMatrix='" + bandwidthMatrix + '\'' +
                 '}';
     }

@@ -5,6 +5,8 @@ import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.GsonBuilder;
 
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Value;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,6 +19,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+
+
 
 public class TestBenchmark 
 {
@@ -170,40 +175,62 @@ public class TestBenchmark
                                             for(String new_stream_policy : nsp){
                                                 for(String parent_stream_policy : psp){
                                                     for(String choose_device_policy : cdp){
-                                                        BenchmarkConfig config = new BenchmarkConfig();
+                                                        for(String scalingChoice: parsedConfig.scalingChoice){
+                                                            BenchmarkConfig config = new BenchmarkConfig();
 
-                                                        nb = parsedConfig.numBlocks.get(bench);
-                                                        if(nb != null) config.numBlocks = nb;
+                                                            nb = parsedConfig.numBlocks.get(bench);
+                                                            if(nb != null) config.numBlocks = nb;
+    
+                                                            blockSize1D = parsedConfig.block_size1d.get(bench);
+                                                            if(blockSize1D != null) config.blockSize1D = blockSize1D;
+    
+                                                            blockSize2D = parsedConfig.block_size2d.get(bench);
+                                                            if(blockSize2D != null) config.blockSize2D = blockSize2D;
+    
+                                                            config.debug = parsedConfig.debug;
+                                                            config.benchmarkName = bench;
+                                                            config.size = curr_size;
+                                                            config.numGpus = num_gpu;
+                                                            config.executionPolicy = policy;
+                                                            config.dependencyPolicy = dependency_policy;
+                                                            config.retrieveNewStreamPolicy = new_stream_policy;
+                                                            config.retrieveParentStreamPolicy = parent_stream_policy;
+                                                            config.deviceSelectionPolicy = choose_device_policy;
+                                                            config.inputPrefetch = p;
+                                                            config.totIter = num_iter;
+                                                            config.forceStreamAttach = s;
+                                                            config.memAdvisePolicy = m;
+                                                            config.bandwidthMatrix = BANDWIDTH_MATRIX;
+                                                            config.enableComputationTimers =t;
+                                                            config.nvprof_profile = parsedConfig.nvprof_profile;
+                                                            config.gpuModel = this.currentGPU.name;
+                                                            config.results_path = this.results_path;
+                                                            config.reInit = parsedConfig.reInit;
+                                                            config.scalingChoice = scalingChoice; // strong or weak scaling
+                                                            config.deviceId = num_gpu; // TO CHECK
+                                                            
+                                                            // implementation of relevant MonteCarloMultiGPU.cpp
+                                                            boolean strongScaling;
+                                                            if(config.scalingChoice.isEmpty())
+                                                                strongScaling=false;
+                                                            else{
+                                                                if(scalingChoice.equalsIgnoreCase("strong"))
+                                                                    strongScaling=true;
+                                                                else
+                                                                    strongScaling=false;
+                                                            }
+                                                            int nOptions = config.size * config.size;
+                                                            // adjustProblemSize not implemented because size can be adjusted by config file
+                                                            int scale = (strongScaling) ? 1 : config.numGpus;
+                                                            int OPT_N = nOptions * scale;
+                                                            int PATH_N = 262144;
 
-                                                        blockSize1D = parsedConfig.block_size1d.get(bench);
-                                                        if(blockSize1D != null) config.blockSize1D = blockSize1D;
+                                                            // TODO: blackScholesCall
 
-                                                        blockSize2D = parsedConfig.block_size2d.get(bench);
-                                                        if(blockSize2D != null) config.blockSize2D = blockSize2D;
-
-                                                        config.debug = parsedConfig.debug;
-                                                        config.benchmarkName = bench;
-                                                        config.size = curr_size;
-                                                        config.numGpus = num_gpu;
-                                                        config.executionPolicy = policy;
-                                                        config.dependencyPolicy = dependency_policy;
-                                                        config.retrieveNewStreamPolicy = new_stream_policy;
-                                                        config.retrieveParentStreamPolicy = parent_stream_policy;
-                                                        config.deviceSelectionPolicy = choose_device_policy;
-                                                        config.inputPrefetch = p;
-                                                        config.totIter = num_iter;
-                                                        config.forceStreamAttach = s;
-                                                        config.memAdvisePolicy = m;
-                                                        config.bandwidthMatrix = BANDWIDTH_MATRIX;
-                                                        config.enableComputationTimers =t;
-                                                        config.nvprof_profile = parsedConfig.nvprof_profile;
-                                                        config.gpuModel = this.currentGPU.name;
-                                                        config.results_path = this.results_path;
-                                                        config.reInit = parsedConfig.reInit;
-
-                                                        System.out.println(config);
-                                                        benchToRun = createBench(config);
-                                                        benchToRun.run();
+                                                            System.out.println(config);
+                                                            benchToRun = createBench(config);
+                                                            benchToRun.run();
+                                                        }
                                                     }
                                                 }
                                             }
@@ -217,6 +244,8 @@ public class TestBenchmark
             }
         }
     }
+
+
 
     private Benchmark createBench(BenchmarkConfig config) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {       
         // Courtesy of https://stackoverflow.com/questions/7495785/java-how-to-instantiate-a-class-from-string
@@ -275,6 +304,7 @@ class Config {
     ArrayList<String> parent_stream_policies;
     ArrayList<String> choose_device_policies;
     ArrayList<String> memory_advise;
+    ArrayList<String> scalingChoice;
 
     ArrayList<Boolean> prefetch;
     ArrayList<Boolean> stream_attach;
@@ -302,6 +332,7 @@ class Config {
                 ", parent_stream_policies=" + parent_stream_policies +
                 ", choose_device_policies=" + choose_device_policies +
                 ", memory_advise=" + memory_advise +
+                ", scalingChoice=" + scalingChoice +
                 ", prefetch=" + prefetch +
                 ", stream_attach=" + stream_attach +
                 ", time_computation=" + time_computation +

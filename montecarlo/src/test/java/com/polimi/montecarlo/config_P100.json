@@ -8,12 +8,12 @@
   "nvprof_profile": false,
   "num_elem": {
     "B1": [160000000],
-    "MonteCarlo" : [1048576]
+    "MonteCarlo" : [1024]
   },
-  "benchmarks": ["B1"],
+  "benchmarks": ["MonteCarlo"],
   "numBlocks": {
     "B1":  64,
-    "MonteCarlo" : -1
+    "MonteCarlo" : 1024
   },
   "exec_policies" : ["async"],
   "dependency_policies": ["with-const"],
@@ -21,6 +21,7 @@
   "parent_stream_policies": ["disjoint"],
   "choose_device_policies": ["round-robin"],
   "memory_advise": ["none"],
+  "scalingChoice": ["weak", "strong"],
   "prefetch": [false],
   "stream_attach": [false],
   "time_computation": [false],

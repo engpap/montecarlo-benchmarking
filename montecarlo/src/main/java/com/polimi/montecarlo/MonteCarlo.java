@@ -117,12 +117,6 @@ public class MonteCarlo extends Benchmark{
 
     public MonteCarlo(BenchmarkConfig currentConfig) {super(currentConfig);}
 
-    @Override
-    protected void initializeTest(int iteration) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'initializeTest'");
-    }
-
     /// Resembles initMonteCarloGPU.
     @Override
     protected void allocateTest(int iteration) {
@@ -154,19 +148,15 @@ public class MonteCarlo extends Benchmark{
         // Build RNG_SETUP_STATES_KERNEL
         rngSetupStatesKernelFunction = buildKernel.execute(RNG_SETUP_STATES_KERNEL, "rngSetupStates", "pointer, pointer, pointer, pointer, pointer, pointer, sint32");
         monteCarloOneBlockPerOptionKernelFunction = buildKernel.execute(MONTECARLO_ONE_BLOCK_PER_OPTION_KERNEL, "monteCarloOneBlockPerOption", "pointer, pointer, pointer, pointer, pointer, pointer, pointer, pointer, pointer, pointer, pointer, pointer, sint32, sint32");
-
     }
 
-
-
-
-
-
-
-
-
-
-
+    @Override
+    protected void initializeTest(int iteration) {
+    if(config.debug)
+        System.out.println("    INSIDE initializeTest() - " + iteration);
+        rngSetupStatesKernelFunction.execute(config.numBlocks, config.blockSize1D)
+                .execute(curandState_d, curandState_v, curandState_boxmuller_flag, curandState_boxmuller_flag_double, curandState_boxmuller_extra, curandState_boxmuller_extra_double, config.deviceId);
+    }
 
     @Override
     protected void resetIteration(int iteration) {
@@ -176,8 +166,7 @@ public class MonteCarlo extends Benchmark{
 
     @Override
     protected void runTest(int iteration) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'runTest'");
+       
     }
 
     @Override
