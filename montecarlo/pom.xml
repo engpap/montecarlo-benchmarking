@@ -51,7 +51,6 @@
         <version>2.15.0</version>
     </dependency>
 
-  
     <!-- https://mvnrepository.com/artifact/com.oracle.truffle/truffle-api -->
     <dependency>
         <groupId>com.oracle.truffle</groupId>
