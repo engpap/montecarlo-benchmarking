@@ -85,7 +85,7 @@ extern "C" void MonteCarloCPU(
     TOptionData optionData,
     float *h_Random,
     int pathN
-);
+);  
 
 //Black-Scholes formula for call options
 extern "C" void BlackScholesCall(

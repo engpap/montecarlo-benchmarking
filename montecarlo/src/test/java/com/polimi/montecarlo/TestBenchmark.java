@@ -207,16 +207,10 @@ public class TestBenchmark
                                                             config.results_path = this.results_path;
                                                             config.reInit = parsedConfig.reInit;
                                                             config.scalingChoice = scalingChoice; // strong or weak scaling
-                                                            config.deviceId = num_gpu; // WRONGGGGGGGGGGGGG
-                                                            // TODO: remove this part prob
-                                                            int optionCount = OPT_N / config.numGpus;
-                                                            for(int i=0; i<config.numGpus; i++){
-                                                                if( i < OPT_N % num_gpu)
-                                                                config.optionCount++;
-                                                                System.out.println(config);
-                                                                benchToRun = createBench(config);
-                                                                benchToRun.run();
-                                                            }
+
+                                                            System.out.println(config);
+                                                            benchToRun = createBench(config);
+                                                            benchToRun.run();
                                                          
                                                         }
                                                     }

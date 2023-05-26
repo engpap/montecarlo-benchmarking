@@ -2,7 +2,7 @@
   "num_iter": 2,
   "reInit": false,
   "randomInit": false,
-  "cpuValidation": false,
+  "cpuValidation": true,
   "heap_size": 470,
   "debug": true,
   "nvprof_profile": false,

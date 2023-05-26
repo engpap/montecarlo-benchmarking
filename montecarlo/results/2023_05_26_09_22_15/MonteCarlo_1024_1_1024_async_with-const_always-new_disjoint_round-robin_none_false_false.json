@@ -1,0 +1,79 @@
+{
+  "config" : {
+    "benchmarkName" : "MonteCarlo",
+    "setupId" : "",
+    "totIter" : 2,
+    "currentIter" : 0,
+    "randomSeed" : 42,
+    "size" : 1024,
+    "blockSize1D" : 32,
+    "blockSize2D" : 8,
+    "numBlocks" : 1024,
+    "randomInit" : false,
+    "reInit" : false,
+    "reAlloc" : false,
+    "cpuValidate" : false,
+    "executionPolicy" : "async",
+    "inputPrefetch" : false,
+    "retrieveNewStreamPolicy" : "always-new",
+    "retrieveParentStreamPolicy" : "disjoint",
+    "dependencyPolicy" : "with-const",
+    "deviceSelectionPolicy" : "round-robin",
+    "forceStreamAttach" : false,
+    "enableComputationTimers" : false,
+    "numGpus" : 1,
+    "deviceId" : 0,
+    "pathN" : 0,
+    "optN" : 0,
+    "memAdvisePolicy" : "none",
+    "scalingChoice" : "strong",
+    "debug" : true,
+    "nvprof_profile" : false,
+    "gpuModel" : "Tesla P100-SXM2-16GB"
+  },
+  "iterations" : [ {
+    "iteration" : 0,
+    "time_phases" : false,
+    "gpu_result" : 0.0,
+    "computation_sec" : 0.0,
+    "total_time_sec" : 5.446967124938965,
+    "overhead_sec" : 0.02053263783454895,
+    "computation_sum_phases_sec" : 5.426434487104416,
+    "phases" : [ {
+      "phaseName" : "alloc",
+      "executionTime_sec" : 0.015743868425488472
+    }, {
+      "phaseName" : "init",
+      "executionTime_sec" : 0.003957769833505154
+    }, {
+      "phaseName" : "reset",
+      "executionTime_sec" : 2.1299999843904516E-6
+    }, {
+      "phaseName" : "execution",
+      "executionTime_sec" : 0.34552666544914246
+    }, {
+      "phaseName" : "close",
+      "executionTime_sec" : 5.080907821655273
+    } ]
+  }, {
+    "iteration" : 1,
+    "time_phases" : false,
+    "gpu_result" : 0.0,
+    "computation_sec" : 0.0,
+    "total_time_sec" : 5.3656134605407715,
+    "overhead_sec" : 4.165470600128174E-4,
+    "computation_sum_phases_sec" : 5.365196913480759,
+    "phases" : [ {
+      "phaseName" : "reset",
+      "executionTime_sec" : 3.111000069111469E-6
+    }, {
+      "phaseName" : "execution",
+      "executionTime_sec" : 0.34463760256767273
+    }, {
+      "phaseName" : "close",
+      "executionTime_sec" : 5.020559310913086
+    } ]
+  } ],
+  "filteredPhases" : [ "alloc", "reset", "init" ],
+  "cpu_result" : 0.0
+}

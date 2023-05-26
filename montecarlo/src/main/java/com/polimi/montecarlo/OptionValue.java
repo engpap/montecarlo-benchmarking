@@ -15,4 +15,12 @@ public class OptionValue {
     public float getConfidence() {
         return Confidence;
     }
+
+    public void setExpected(float Expected) {
+        this.Expected = Expected;
+    }
+
+    public void setConfidence(float Confidence) {
+        this.Confidence = Confidence;
+    }
 }

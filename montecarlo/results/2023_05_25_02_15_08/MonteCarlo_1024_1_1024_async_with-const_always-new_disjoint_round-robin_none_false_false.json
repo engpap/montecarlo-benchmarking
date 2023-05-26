@@ -1,0 +1,71 @@
+{
+  "config" : {
+    "benchmarkName" : "MonteCarlo",
+    "setupId" : "",
+    "totIter" : 2,
+    "currentIter" : 0,
+    "randomSeed" : 42,
+    "size" : 1024,
+    "blockSize1D" : 32,
+    "blockSize2D" : 8,
+    "numBlocks" : 1024,
+    "randomInit" : false,
+    "reInit" : false,
+    "reAlloc" : false,
+    "cpuValidate" : false,
+    "executionPolicy" : "async",
+    "inputPrefetch" : false,
+    "retrieveNewStreamPolicy" : "always-new",
+    "retrieveParentStreamPolicy" : "disjoint",
+    "dependencyPolicy" : "with-const",
+    "deviceSelectionPolicy" : "round-robin",
+    "forceStreamAttach" : false,
+    "enableComputationTimers" : false,
+    "numGpus" : 1,
+    "deviceId" : 1,
+    "memAdvisePolicy" : "none",
+    "scalingChoice" : "strong",
+    "debug" : true,
+    "nvprof_profile" : false,
+    "gpuModel" : "Tesla P100-SXM2-16GB"
+  },
+  "iterations" : [ {
+    "iteration" : 0,
+    "time_phases" : false,
+    "gpu_result" : 0.0,
+    "computation_sec" : 0.0,
+    "total_time_sec" : 0.028413822874426842,
+    "overhead_sec" : 0.02772189088864252,
+    "computation_sum_phases_sec" : 6.91931985784322E-4,
+    "phases" : [ {
+      "phaseName" : "alloc",
+      "executionTime_sec" : 0.024548692628741264
+    }, {
+      "phaseName" : "init",
+      "executionTime_sec" : 0.002762886928394437
+    }, {
+      "phaseName" : "reset",
+      "executionTime_sec" : 1.8946000636788085E-5
+    }, {
+      "phaseName" : "execution",
+      "executionTime_sec" : 6.91931985784322E-4
+    } ]
+  }, {
+    "iteration" : 1,
+    "time_phases" : false,
+    "gpu_result" : 0.0,
+    "computation_sec" : 0.0,
+    "total_time_sec" : 4.1877999319694936E-4,
+    "overhead_sec" : 5.276899901218712E-5,
+    "computation_sum_phases_sec" : 3.6601099418476224E-4,
+    "phases" : [ {
+      "phaseName" : "reset",
+      "executionTime_sec" : 1.7144000594271347E-5
+    }, {
+      "phaseName" : "execution",
+      "executionTime_sec" : 3.6601099418476224E-4
+    } ]
+  } ],
+  "filteredPhases" : [ "alloc", "reset", "init" ],
+  "cpu_result" : 0.0
+}

@@ -37,7 +37,7 @@ public abstract class Benchmark {
             long overall_gpu_start = System.nanoTime();
 
             // Allocate memory for the benchmark
-
+            
             if (config.reAlloc || i == 0){
                 if(config.debug)
                     System.out.println("["+i+"] alloc");
@@ -66,6 +66,10 @@ public abstract class Benchmark {
                 System.out.println("["+i+"] execution");
             time(i, "execution", this::runTest);
 
+            if(config.debug)
+                System.out.println("["+i+"] close");
+            time(i, "close", this::closeTest);
+
             if(config.nvprof_profile){
                 context.eval("grcuda", "cudaProfilerStop").execute();
             }
@@ -76,8 +80,9 @@ public abstract class Benchmark {
             benchmarkResults.setCurrentTotalTime((overall_gpu_end - overall_gpu_start) / 1000000000F);
 
             // Perform validation on CPU
-            if (config.cpuValidate && i == 0)
+            if (config.cpuValidate && i == 0) {
                 cpuValidation();
+            }
 
             if(config.debug)
                 System.out.println("["+i+"] VALIDATION \nCPU: " + benchmarkResults.cpu_result+"\nGPU: " + benchmarkResults.currentIteration().gpu_result);
@@ -174,6 +179,12 @@ public abstract class Benchmark {
      * @param iteration the current number of the iteration
      */
     protected abstract void runTest(int iteration);
+
+    /**
+     * 
+     * @param iteration the current number of the iteration
+     */
+    protected abstract void closeTest(int iteration);
 
     /**
      * (numerically) validate results against CPU

@@ -17,15 +17,37 @@ public class Plan {
     private OptionData_Value optionData_Value = new OptionData_Value();
     private OptionValue_Value optionValue_Value = new OptionValue_Value();
 
+    private CurandState curandState = new CurandState();
+
+    private int pathN;
+    private int gridSize;
+
     /// This class resembles the plan->um_OptionData struct in MonteCarlo_kernel.cu of a single plan element
     private class OptionData_Value { private Value S, X, MuByT, VBySqrtT; } 
 
     /// This class resembles the plan->um_CallValue struct in MonteCarlo_kernel.cu of a single plan element
     private class OptionValue_Value { private Value Expected, Confidence; }
 
-    private int pathN;
+    /// GrCUDA does not directly support unsigned integer data types, as Java itself doesn't have built-in support for unsigned integers.
+    /// However, WE can work around this by using a larger data type. For example, we can use long to represent an unsigned int from C++.
+    /// This allows you to use the full range of unsigned int values from C++, since a long in Java has more bits than an int and thus can 
+    /// represent larger values. 
+    /// rngStates is an array of curandState states, thus we decompose curandState struct into its components.
+    private class CurandState {
+        private Value d;
+        private Value v;
+        private Value boxmuller_flag;
+        private Value boxmuller_flag_double;
+        private Value boxmuller_extra;
+        private Value boxmuller_extra_double;
+    }
 
-    private int gridSize;
+    /// Constructor
+    public Plan(int optionCount) {
+        this.optionCount = optionCount;
+        this.optionData = new OptionData[optionCount];
+        this.callValue = new OptionValue[optionCount];
+    }
 
     /// SETTERS
 
@@ -49,6 +71,15 @@ public class Plan {
         }
     }
 
+    public void setCallValueExpected(int index, float Expected){
+        this.callValue[index].setExpected(Expected);
+    }
+    
+    public void setCallValueConfidence(int index, float Confidence){
+        this.callValue[index].setConfidence(Confidence);
+    }
+
+
     public void setS(Value S) {
         this.optionData_Value.S = S;
     }
@@ -57,12 +88,12 @@ public class Plan {
         this.optionData_Value.X = X;
     }
 
-    public void setMuByT(Value T) {
-        this.optionData_Value.X = T;
+    public void setMuByT(Value MuByT) {
+        this.optionData_Value.MuByT = MuByT;
     }
 
-    public void setVBySqrtT(Value R) {
-        this.optionData_Value.VBySqrtT = R;
+    public void setVBySqrtT(Value VBySqrtT) {
+        this.optionData_Value.VBySqrtT = VBySqrtT;
     }
 
     public void setExpected(Value Expected) {
@@ -71,6 +102,30 @@ public class Plan {
 
     public void setConfidence(Value Confidence) {
         this.optionValue_Value.Confidence = Confidence;
+    }
+    
+    public void setD(Value d) {
+        this.curandState.d = d;
+    }
+
+    public void setV(Value v) {
+        this.curandState.v = v;
+    }
+
+    public void setBoxmuller_flag(Value boxmuller_flag) {
+        this.curandState.boxmuller_flag = boxmuller_flag;
+    }
+
+    public void setBoxmuller_flag_double(Value boxmuller_flag_double) {
+        this.curandState.boxmuller_flag_double = boxmuller_flag_double;
+    }
+
+    public void setBoxmuller_extra(Value boxmuller_extra) {
+        this.curandState.boxmuller_extra = boxmuller_extra;
+    }
+
+    public void setBoxmuller_extra_double(Value boxmuller_extra_double) {
+        this.curandState.boxmuller_extra_double = boxmuller_extra_double;
     }
 
     public void setPathN(int pathN) {
@@ -115,7 +170,31 @@ public class Plan {
         return this.optionValue_Value.Confidence;
     }
 
-    public int getPATH_N() {
+    public Value getD() {
+        return this.curandState.d;
+    }
+
+    public Value getV() {
+        return this.curandState.v;
+    }
+
+    public Value getBoxmuller_flag() {
+        return this.curandState.boxmuller_flag;
+    }
+
+    public Value getBoxmuller_flag_double() {
+        return this.curandState.boxmuller_flag_double;
+    }
+
+    public Value getBoxmuller_extra() {
+        return this.curandState.boxmuller_extra;
+    }
+
+    public Value getBoxmuller_extra_double() {
+        return this.curandState.boxmuller_extra_double;
+    }
+
+    public int getPathN() {
         return this.pathN;
     }
 
@@ -126,7 +205,10 @@ public class Plan {
     public OptionValue[] getCallValue() {
         return this.callValue;
     }
-    
+
+    public int getGridSize() {
+        return this.gridSize;
+    }
 }
 
 

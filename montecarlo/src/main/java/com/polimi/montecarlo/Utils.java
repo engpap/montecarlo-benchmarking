@@ -18,7 +18,7 @@ public class Utils {
         double CNDD2 = CND(d2);
         double expRT = Math.exp(- R * T);
 
-        return (float)(S * CNDD1 - (X * expRT * CNDD2));
+        return (float)(S * CNDD1 - X * expRT * CNDD2);
     }
 
     private static double CND(double d) {
