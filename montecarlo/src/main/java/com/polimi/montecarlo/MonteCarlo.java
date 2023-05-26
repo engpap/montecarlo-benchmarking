@@ -1,103 +1,12 @@
 package com.polimi.montecarlo;
 
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+
 import org.graalvm.polyglot.Value;
-import org.junit.Assert.assertTrue;
 
 public class MonteCarlo extends Benchmark{
-
-    private static final String RNG_SETUP_STATES_KERNEL = "" +
-    "extern \"C\" __global__ void rngSetupStates(\n" +
-    "    unsigned int *d,\n" +
-    "    unsigned int *v,\n" +
-    "    int *boxmuller_flag,\n" +
-    "    int *boxmuller_flag_double,\n" +
-    "    float *boxmuller_extra,\n" +
-    "    double *boxmuller_extra_double,\n" +
-    "    int device_id)\n" +
-    "{\n" +
-    "    // determine global thread id\n" +
-    "    int tid = threadIdx.x + blockIdx.x * blockDim.x;\n" +
-    "    curandState rngState;\n" +
-    "    rngState.d = d[tid];\n" +
-    "    for (int i = 0; i < 5; i++) rngState.v[i] = v[5*tid+i];\n" +
-    "    rngState.boxmuller_flag = boxmuller_flag[tid];\n" +
-    "    rngState.boxmuller_flag_double = boxmuller_flag_double[tid];\n" +
-    "    rngState.boxmuller_extra = boxmuller_extra[tid];\n" +
-    "    rngState.boxmuller_extra_double = boxmuller_extra_double[tid];\n" +
-    "    // Each threadblock gets different seed,\n" +
-    "    // Threads within a threadblock get different sequence numbers\n" +
-    "    curand_init(blockIdx.x + gridDim.x * device_id, threadIdx.x, 0, &rngState);\n" +
-    "    d[tid] = rngState.d;\n" +
-    "    for (int i = 0; i < 5; i++) v[5*tid+i] = rngState.v[i];\n" +
-    "    boxmuller_flag[tid] = rngState.boxmuller_flag;\n" +
-    "    boxmuller_flag_double[tid] = rngState.boxmuller_flag_double;\n" +
-    "    boxmuller_extra[tid] = rngState.boxmuller_extra;\n" +
-    "    boxmuller_extra_double[tid] = rngState.boxmuller_extra_double;\n" +
-    "}";
-
-
-    private static final String MONTECARLO_ONE_BLOCK_PER_OPTION_KERNEL =
-    " static __global__ void MonteCarloOneBlockPerOption(\n" +
-    "    unsigned int * __restrict d,\n" +
-    "    unsigned int * __restrict v,\n" +
-    "    int * __restrict boxmuller_flag,\n" +
-    "    int * __restrict boxmuller_flag_double, \n" +
-    "    float * __restrict boxmuller_extra,\n" +
-    "    double * __restrict boxmuller_extra_double,\n" +
-    "    real * __restrict optionData_S,\n" +
-    "    real * __restrict optionData_X,\n" +
-    "    real * __restrict optionData_MuByT,\n" +
-    "    real * __restrict optionData_VBySqrtT,\n" +
-    "    real * __restrict callValue_Expected,\n" +
-    "    real * __restrict callValue_Confidence,\n" +
-    "    int pathN,\n" +
-    "    int optionN)\n" +
-    "{\n" +
-    "    const int SUM_N = THREAD_N;\n" +
-    "    __shared__ real s_SumCall[SUM_N];\n" +
-    "    __shared__ real s_Sum2Call[SUM_N];\n" +
-    "    // determine global thread id\n" +
-    "    int tid = threadIdx.x + blockIdx.x * blockDim.x;\n" +
-    "    // reassemble curandState\n" +
-    "    curandState localState;\n" +
-    "    localState.d = d[tid];\n" +
-    "    for (int i = 0; i < 5; i++) localState.v[i] = v[5*tid+i];\n" +
-    "    localState.boxmuller_flag = boxmuller_flag[tid];\n" +
-    "    localState.boxmuller_flag_double = boxmuller_flag_double[tid];\n" +
-    "    localState.boxmuller_extra = boxmuller_extra[tid];\n" +
-    "    localState.boxmuller_extra_double = boxmuller_extra_double[tid];\n" +
-    "    for (int optionIndex = blockIdx.x; optionIndex < optionN; optionIndex += gridDim.x)\n" +
-    "    {\n" +
-    "        const real S = optionData_S[optionIndex];\n" +
-    "        const real X = optionData_X[optionIndex];\n" +
-    "        const real MuByT = optionData_MuByT[optionIndex];\n" +
-    "        const real VBySqrtT = optionData_VBySqrtT[optionIndex];\n" +
-    "        for (int iSum = threadIdx.x; iSum < SUM_N; iSum += blockDim.x)\n" +
-    "        {\n" +
-    "            __TOptionValue sumCall = {0, 0};\n" +
-    "#pragma unroll 8\n" +
-    "            for (int i = iSum; i < pathN; i += SUM_N)\n" +
-    "            {\n" +
-    "                real r = curand_normal(&localState);\n" +
-    "                real callValue = endCallValue(S, X, r, MuByT, VBySqrtT);\n" +
-    "                sumCall.Expected += callValue;\n" +
-    "                sumCall.Confidence += callValue * callValue;\n" +
-    "            }\n" +
-    "            s_SumCall[iSum] = sumCall.Expected;\n" +
-    "            s_Sum2Call[iSum] = sumCall.Confidence;\n" +
-    "        }\n" +
-    "        // Reduce shared memory accumulators\n" +
-    "        // and write final result to global memory\n" +
-    "        sumReduce<real, SUM_N, THREAD_N>(s_SumCall, s_Sum2Call);\n" +
-    "        if (threadIdx.x == 0)\n" +
-    "        {\n" +
-    "            __TOptionValue t = {s_SumCall[0], s_Sum2Call[0]};\n" +
-    "            callValue_Expected[optionIndex] = t.Expected;\n" +
-    "            callValue_Confidence[optionIndex] = t.Confidence;\n" +
-    "        }\n" +
-    "    }\n" +
-    "}";
-
 
     /// Kernels
     private Value monteCarloOneBlockPerOptionKernelFunction;
@@ -105,39 +14,112 @@ public class MonteCarlo extends Benchmark{
 
     /// Constants
     private static final int THREAD_N = 256;
+    private static final int Max_OPTIONS = 1024*1024*64;
 
-    /// __TOptionData
-    private Value optionData_S, optionData_X, optionData_MuByT, optionData_VBySqrtT;
+    private int OPT_N;
 
-    private float[] T;
-    // In the original benchmark R and V are always respectively initialized to 0.06 and 0.10
-    private double R = 0.06f;
-    private double V = 0.10f;
+    /// OptionData and CallValueGPU are arrays of OPT_N elements
+    private OptionData[] optionData;
+    private OptionValue[] callValueGPU;
 
-    private int OPT_N = 3;
+    private Plan[] plan;
 
-    /// __TOptionValue
-    private Value optionValue_Expected, optionValue_Confidence;
-
-    /// rngStates: array of curandState states, thus we decompose curandState struct into its components
+    /// rngStates is an array of curandState states, thus we decompose curandState struct into its components
     /// curandStateXORWOW
     private Value curandState_d, curandState_v, curandState_boxmuller_flag, curandState_boxmuller_flag_double, curandState_boxmuller_extra, curandState_boxmuller_extra_double;
 
-    public MonteCarlo(BenchmarkConfig currentConfig) {super(currentConfig);}
+    public MonteCarlo(BenchmarkConfig currentConfig) {
+        super(currentConfig);
+        init();
+    }
+
+    /**
+     * This method resembles implementation of intialization functions of MonteCarloMultiGPU.cpp
+     */
+    private void init() { // TRANSLATION FINISHED!
+
+        boolean strongScaling;
+        if(config.scalingChoice.isEmpty()){
+            strongScaling=false;
+        }
+        else{
+            if(config.scalingChoice.equalsIgnoreCase("strong"))
+                strongScaling=true;
+            else
+                strongScaling=false;
+        }
+        int nOptions = config.size * config.size;
+        // adjustProblemSize not implemented because size can be adjusted by config file
+        int scale = (strongScaling) ? 1 : config.numGpus;
+        OPT_N = nOptions * scale;
+        int PATH_N = 262144;
+
+        optionData = new OptionData[OPT_N];
+        callValueGPU = new OptionValue[OPT_N];
+       
+        float S, X, T, R, V;
+        float Expected, Confidence;
+        for (int i = 0; i < OPT_N; i++) {
+            S = Utils.randFloat(5.0f, 50.0f);
+            X = Utils.randFloat(10.0f, 25.0f);
+            T = Utils.randFloat(1.0f, 5.0f);
+            R = 0.06f;
+            V = 0.10f;
+            optionData[i] = new OptionData(S, X, T, R, V);
+
+            Expected = -1.0f;
+            Confidence = -1.0f;
+            callValueGPU[i] = new OptionValue(Expected, Confidence);
+        }
+
+        // Instantiate the plan array corresponding to TOptionPlan[GPU_N] (optionSolver)
+        this.plan = new Plan[config.numGpus];
+        
+        // Get option count for each GPU
+        for(int gpu_index = 0; gpu_index < config.numGpus; gpu_index++)
+        {
+            plan[gpu_index].setOptionCount(OPT_N / config.numGpus);
+        }
+
+        // Take into account cases with "odd" option counts
+        for(int gpu_index = 0; gpu_index < (OPT_N % config.numGpus); gpu_index++)
+        {
+            plan[gpu_index].setOptionCount(plan[gpu_index].getOptionCount() + 1);
+        }
+
+        //Assign GPU option ranges
+        int gpuBase = 0;
+        for(int gpu_index=0; gpu_index < config.numGpus; gpu_index++)
+        {
+            plan[gpu_index].setDevice(gpu_index);
+            plan[gpu_index].setOptionData(optionData, gpuBase, gpuBase + plan[gpu_index].getOptionCount()); //TODO: WRONG
+            plan[gpu_index].setCallValue(callValueGPU, gpuBase, gpuBase + plan[gpu_index].getOptionCount());
+            plan[gpu_index].setPathN(PATH_N);
+            plan[gpu_index].setGridSize(adjustGridSize(plan[gpu_index].getDevice(), plan[gpu_index].getOptionCount()));
+            gpuBase += plan[gpu_index].getOptionCount();
+        }
+    }
+
+    //TODO adjustGridSize
+    private int adjustGridSize(int device, int optionCount) {
+        // TODO: implement adjustGridSize when binding is implemented
+        return 1; //dummy return, to remove
+    }
 
     /// Resembles initMonteCarloGPU.
     @Override
     protected void allocateTest(int iteration) {
 
-        // Allocate __TOptionData's arrays: equivalent to allocate plan->um_OptionData,
-        optionData_S = requestArray("float", config.size);
-        optionData_X = requestArray("float", config.size);
-        optionData_MuByT = requestArray("float", config.size);
-        optionData_VBySqrtT = requestArray("float", config.size);
-
-        // Allocate __TOptionValue's arrays: equivalent to allocate plan->um_CallValue,
-        optionValue_Expected = requestArray("float", config.size);
-        optionValue_Confidence = requestArray("float", config.size);
+        // Allocate optionData and optionValue (callValue)
+        for(int gpu_index=0; gpu_index < config.numGpus; gpu_index++){
+            plan[gpu_index].setS(requestArray("float", config.size));
+            plan[gpu_index].setX(requestArray("float", config.size));
+            plan[gpu_index].setMuByT(requestArray("float", config.size));
+            plan[gpu_index].setVBySqrtT(requestArray("float", config.size));
+            plan[gpu_index].setExpected(requestArray("float", config.size));
+            plan[gpu_index].setConfidence(requestArray("float", config.size));
+        }
+       
 
         /* GrCUDA does not directly support unsigned integer data types, as Java itself doesn't have built-in support for unsigned integers.
         However, WE can work around this by using a larger data type. For example, we can use long to represent an unsigned int from C++.
@@ -150,12 +132,42 @@ public class MonteCarlo extends Benchmark{
         curandState_boxmuller_extra = requestArray("float", config.numBlocks * THREAD_N);
         curandState_boxmuller_extra_double = requestArray("double", config.numBlocks * THREAD_N);
 
-        // Context initialization
-        Value buildKernel = context.eval("grcuda", "buildkernel");
+        // TODO: remove this
+        File f = new File("/home/ubuntu/montecarlo-benchmarking/montecarlo/src/main/java/com/polimi/montecarlo/kernels.ptx");
+        if(f.exists() && !f.isDirectory()) { 
+            System.out.println("File exists!");
+        } else {
+            System.out.println("File doesn't exist");
+        }
+        String path = "/home/ubuntu/montecarlo-benchmarking/montecarlo/src/main/java/com/polimi/montecarlo/kernels.ptx";
+
+        Value cu = context.eval("grcuda", "CU");
+
+        rngSetupStatesKernelFunction = cu.invokeMember("bindkernel", path, "cxx rngSetupStates(" +
+        "d: out pointer uint32, " + 
+        "v: out pointer uint32, " + 
+        "boxmuller_flag: out pointer sint32, " + 
+        "boxmuller_flag_double: out pointer sint32, " + 
+        "boxmuller_extra: out pointer float, " + 
+        "boxmuller_extra_double: out pointer double, " + 
+        "device_id: sint32)");
+
+        monteCarloOneBlockPerOptionKernelFunction = cu.invokeMember("bindkernel", path, "cxx MonteCarloOneBlockPerOption( " +
+        "d: int pointer uint32, " + 
+        "v in pointer uint32, " + 
+        "boxmuller_flag: in pointer sint32, " + 
+        "boxmuller_flag_double: in pointer sint32, " +
+        "boxmuller_extra: in pointer float, " + 
+        "boxmuller_extra_double: in pointer double, " + 
+        "optionData_S: in pointer float, " + 
+        "optionData_X: in pointer float, " +  
+        "optionData_VBySqrtT: in pointer float, " +  
+        "optionData_callValue_Expected: out pointer float, " +  
+        "optionData_callValue_Confidence: out pointer float, " +
+        "pathN: sint32" +
+        "optionN: sint32)"); 
+
         
-        // Build RNG_SETUP_STATES_KERNEL
-        rngSetupStatesKernelFunction = buildKernel.execute(RNG_SETUP_STATES_KERNEL, "rngSetupStates", "pointer, pointer, pointer, pointer, pointer, pointer, sint32");
-        monteCarloOneBlockPerOptionKernelFunction = buildKernel.execute(MONTECARLO_ONE_BLOCK_PER_OPTION_KERNEL, "monteCarloOneBlockPerOption", "pointer, pointer, pointer, pointer, pointer, pointer, pointer, pointer, pointer, pointer, pointer, pointer, sint32, sint32");
     }
 
     @Override
@@ -168,57 +180,82 @@ public class MonteCarlo extends Benchmark{
 
     @Override
     protected void resetIteration(int iteration) {
+        System.out.println("test");
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'resetIteration'");
+        //throw new UnsupportedOperationException("Unimplemented method 'resetIteration'");
     }
 
     @Override
     protected void runTest(int iteration) {
-        // other code
+        int optionStart=0;
+        // For each GPU, we initialize the option data values for the current iteration
+        for(int gpu_index=0; gpu_index < config.numGpus; gpu_index ++){
 
-        // OptionData initialization
-        double MuByT, VBySqrtT;
-        for (int i = 0; i < OPT_N; i++) {
-            optionData_S.setArrayElement(i, Utils.randFloat(5.0f, 50.0f));
-            optionData_X.setArrayElement(i, Utils.randFloat(10.0f, 25.0f));
-            T[i] = Utils.randFloat(1.0f, 5.0f);
-            MuByT = (R - (0.5 * V * V)) * T[i];
-            optionData_MuByT.setArrayElement(i, MuByT);
-            VBySqrtT = V * Math.sqrt(T[i]);
-            optionData_VBySqrtT.setArrayElement(i, VBySqrtT);
+            if(plan[gpu_index].getOptionCount() <= 0 || plan[gpu_index].getOptionCount() > Max_OPTIONS){
+            System.out.println("Invalid optN value");
+            return;
+            }
+
+            double MuByT, VBySqrtT;
+            // This loop iterates over the options assigned to the current GPU
+            for(int option_index=optionStart; option_index < optionStart + plan[gpu_index].getOptionCount(); option_index++){
+                MuByT = (optionData[option_index].getR() - (0.5 * optionData[option_index].getV() * optionData[gpu_index].getV())) * optionData[gpu_index].getT();
+                VBySqrtT = optionData[option_index].getV() * Math.sqrt(optionData[gpu_index].getT());
+                
+                plan[gpu_index].getS().setArrayElement(option_index, optionData[option_index].getS());
+                plan[gpu_index].getX().setArrayElement(option_index, optionData[option_index].getX());
+                plan[gpu_index].getMuByT().setArrayElement(option_index, MuByT);
+                plan[gpu_index].getVBySqrtT().setArrayElement(option_index, VBySqrtT);
+            }
+            optionStart += plan[gpu_index].getOptionCount();
+
+            // TODO: revise kernel to take into account the offset
+            monteCarloOneBlockPerOptionKernelFunction.execute(config.numBlocks, config.blockSize1D)
+            .execute(optionData[gpu_index], curandState_v, curandState_boxmuller_flag, curandState_boxmuller_flag_double, curandState_boxmuller_extra, curandState_boxmuller_extra_double, config.deviceId);
         }
+
+
+
     }
 
+
+    /**
+     * This method execute Black-Scholes computation on the CPU and compares the MonteCarlo results generated with the GPUs.
+     */
     @Override
     protected void cpuValidation() {
-        float callValueBS, delta;
+        System.out.println(">>> Comparing Monte Carlo and Black-Scholes results...");
+        float[] callValueBS = new float[OPT_N];
+        float delta, ref;
+
         float sumDelta = 0;
         float sumRef = 0;
         float sumReserve = 0;
 
-        for (int i = 0; i < OPT_N; i ++) {
-            callValueBS = Utils.BlackScholesCall(optionData_S.getArrayElement(i).asDouble(), 
-                optionData_X.getArrayElement(i).asDouble(), T[i], R, V);
-            delta = Math.abs(callValueBS - optionValue_Expected.getArrayElement(i).asFloat());
-            sumRef = Math.abs(callValueBS);
-            sumDelta += delta;
-            
-            if (delta > 1e-6f) {
-                sumReserve += optionValue_Confidence.getArrayElement(i).asFloat() / delta;
-            }
-        }
-        
-        // TODO: remove comment after importing junit
-        //assertTrue("Test Failed", sumReserve > 1.0f);
-        
-        System.out.println("L1 norm: " + (sumDelta / sumRef));
-        System.out.println("Average reserve: " + sumReserve);
+        // Iterate through all plans and compare BlackScholes results for each option
+        for(int gpu_index = 0; gpu_index < config.numGpus; gpu_index++)
+        {
+            for (int option_index = 0; option_index < plan[gpu_index].getOptionCount(); option_index ++)
+            {
+                callValueBS[option_index] = Utils.BlackScholesCall(plan[gpu_index].getOptionData()[option_index]);
+                delta = Math.abs(callValueBS[option_index] - plan[gpu_index].getCallValue()[option_index].getExpected());
+                ref = callValueBS[option_index];
+                sumDelta += delta;
+                sumRef = Math.abs(ref);                
+                if (delta > 1e-6f) {
+                    sumReserve += plan[gpu_index].getCallValue()[option_index].getConfidence() / delta;
+                }
+            }           
+        }    
+        sumReserve /= OPT_N;
 
-        // TODO: remove this if after adding the assertTrue
-        if(sumReserve > 1.0f) {
-            System.out.println("Test Passed");
-        }
+        System.out.println("Test Summary...");
+        System.out.println("L1 norm        : "+ (sumDelta / sumRef));
+        System.out.println("Average reserve: "+ sumReserve);
+        assertTrue("Test passed", sumReserve > 1.0f);
     }
+
+
 
     
 }

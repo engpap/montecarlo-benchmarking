@@ -3,7 +3,13 @@ package com.polimi.montecarlo;
 import java.util.Random;
 
 public class Utils {
-    public static float BlackScholesCall(double S, double X, double T, double R, double V) {
+    public static float BlackScholesCall(OptionData optionData) {
+
+        double S = optionData.getS();
+        double X = optionData.getX();
+        double T = optionData.getT();
+        double R = optionData.getR();
+        double V = optionData.getV();
 
         double sqrtT = Math.sqrt(T);
         double d1 = (Math.log(S / X) + (R + 0.5 * V * V) * T) / (V * sqrtT);
@@ -15,7 +21,7 @@ public class Utils {
         return (float)(S * CNDD1 - (X * expRT * CNDD2));
     }
 
-    private double CND(double d) {
+    private static double CND(double d) {
         // Black-Scholes parameters
         double A1 = 0.31938153;
         double A2 = -0.356563782;

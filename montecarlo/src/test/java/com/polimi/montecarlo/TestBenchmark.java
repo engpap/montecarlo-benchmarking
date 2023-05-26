@@ -207,29 +207,17 @@ public class TestBenchmark
                                                             config.results_path = this.results_path;
                                                             config.reInit = parsedConfig.reInit;
                                                             config.scalingChoice = scalingChoice; // strong or weak scaling
-                                                            config.deviceId = num_gpu; // TO CHECK
-                                                            
-                                                            // implementation of relevant MonteCarloMultiGPU.cpp
-                                                            boolean strongScaling;
-                                                            if(config.scalingChoice.isEmpty())
-                                                                strongScaling=false;
-                                                            else{
-                                                                if(scalingChoice.equalsIgnoreCase("strong"))
-                                                                    strongScaling=true;
-                                                                else
-                                                                    strongScaling=false;
+                                                            config.deviceId = num_gpu; // WRONGGGGGGGGGGGGG
+                                                            // TODO: remove this part prob
+                                                            int optionCount = OPT_N / config.numGpus;
+                                                            for(int i=0; i<config.numGpus; i++){
+                                                                if( i < OPT_N % num_gpu)
+                                                                config.optionCount++;
+                                                                System.out.println(config);
+                                                                benchToRun = createBench(config);
+                                                                benchToRun.run();
                                                             }
-                                                            int nOptions = config.size * config.size;
-                                                            // adjustProblemSize not implemented because size can be adjusted by config file
-                                                            int scale = (strongScaling) ? 1 : config.numGpus;
-                                                            int OPT_N = nOptions * scale;
-                                                            int PATH_N = 262144;
-
-                                                            // TODO: blackScholesCall
-
-                                                            System.out.println(config);
-                                                            benchToRun = createBench(config);
-                                                            benchToRun.run();
+                                                         
                                                         }
                                                     }
                                                 }
