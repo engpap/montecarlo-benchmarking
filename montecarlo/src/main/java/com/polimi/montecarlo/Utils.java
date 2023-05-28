@@ -42,8 +42,12 @@ public class Utils {
         return cnd;
     }
     
+    /**
+     * For consistency, the seed is fixed to 123 as the cpp MonteCarlo benchmarking version.
+     * Note that generated random numbers are different from the cpp version, even if the same seed is used.
+     */
     public static float randFloat(float low, float high) {
-        Random random = new Random();
+        Random random = new Random(123);
         float t = random.nextFloat();
         return (1.0f - t) * low + t * high;
     }
