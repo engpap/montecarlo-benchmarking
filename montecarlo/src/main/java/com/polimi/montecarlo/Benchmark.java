@@ -89,7 +89,7 @@ public abstract class Benchmark {
         }
 
         // Save the benchmark results
-        benchmarkResults.saveToJsonFile();
+        // benchmarkResults.saveToJsonFile(); TODO: remove this comment to save the results to a json file
 
 
         // Free the allocated arrays

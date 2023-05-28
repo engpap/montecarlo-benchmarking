@@ -7,12 +7,10 @@
   "debug": true,
   "nvprof_profile": false,
   "num_elem": {
-    "B1": [160000000],
     "MonteCarlo" : [1024]
   },
   "benchmarks": ["MonteCarlo"],
   "numBlocks": {
-    "B1":  64,
     "MonteCarlo" : 1024
   },
   "exec_policies" : ["async"],
@@ -27,6 +25,7 @@
   "time_computation": [false],
   "num_gpus": [1],
   "block_size1d": {
+    "MonteCarlo" : 256,
     "B1": 64
   },
   "block_size2d": {

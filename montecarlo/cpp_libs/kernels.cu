@@ -43,12 +43,14 @@ static __global__ void rngSetupStates(
     // determine global thread id 
     int tid = threadIdx.x + blockIdx.x * blockDim.x; 
     curandState rngState; 
-    rngState.d = d[tid]; 
+    // TODO: check if this assignment is really necessary
+    /*rngState.d = d[tid]; 
     for (int i = 0; i < 5; i++) rngState.v[i] = v[5*tid+i]; 
     rngState.boxmuller_flag = boxmuller_flag[tid]; 
     rngState.boxmuller_flag_double = boxmuller_flag_double[tid]; 
     rngState.boxmuller_extra = boxmuller_extra[tid]; 
-    rngState.boxmuller_extra_double = boxmuller_extra_double[tid]; 
+    rngState.boxmuller_extra_double = boxmuller_extra_double[tid];
+    */ 
     // Each threadblock gets different seed, 
     // Threads within a threadblock get different sequence numbers 
     curand_init(blockIdx.x + gridDim.x * device_id, threadIdx.x, 0, &rngState); 

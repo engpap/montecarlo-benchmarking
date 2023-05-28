@@ -87,12 +87,11 @@ public class MonteCarlo extends Benchmark {
             }
         }
 
+        //TODO: remove this or remove the if above, better this since the array are instanciated in the constructor
         // Take into account cases with "odd" option counts
-        for (int gpu_index = 0; gpu_index < (OPT_N % config.numGpus); gpu_index++) {
-            plan[gpu_index].setOptionCount(plan[gpu_index].getOptionCount() + 1);
-        }
-
-
+        //for (int gpu_index = 0; gpu_index < (OPT_N % config.numGpus); gpu_index++) {
+        //    plan[gpu_index].setOptionCount(plan[gpu_index].getOptionCount() + 1);
+        //}
 
         // Assign GPU option ranges
         int gpuBase = 0;
@@ -205,7 +204,7 @@ public class MonteCarlo extends Benchmark {
         if (config.debug)
             System.out.println("    INSIDE initializeTest() - " + iteration);
         for (int gpu_index = 0; gpu_index < config.numGpus; gpu_index++)
-            rngSetupStatesKernelFunction.execute(plan[gpu_index].getGridSize(), config.blockSize1D)
+            rngSetupStatesKernelFunction.execute(plan[gpu_index].getGridSize(), THREAD_N)
                     .execute(plan[gpu_index].getD(), plan[gpu_index].getV(), plan[gpu_index].getBoxmuller_flag(),
                             plan[gpu_index].getBoxmuller_flag_double(), plan[gpu_index].getBoxmuller_extra(),
                             plan[gpu_index].getBoxmuller_extra_double(), plan[gpu_index].getDevice());
@@ -242,7 +241,7 @@ public class MonteCarlo extends Benchmark {
                 plan[gpu_index].getVBySqrtT().setArrayElement(option_index, (float)VBySqrtT);
             }
 
-            monteCarloOneBlockPerOptionKernelFunction.execute(plan[gpu_index].getGridSize(), config.blockSize1D)
+            monteCarloOneBlockPerOptionKernelFunction.execute(plan[gpu_index].getGridSize(), THREAD_N)
                     .execute(
                             plan[gpu_index].getD(), 
                             plan[gpu_index].getV(),
@@ -257,7 +256,7 @@ public class MonteCarlo extends Benchmark {
                             plan[gpu_index].getExpected(),
                             plan[gpu_index].getConfidence(),
                             plan[gpu_index].getPathN(),
-                            plan[gpu_index].getOptionCount() );
+                            plan[gpu_index].getOptionCount());
         }
     }
 
