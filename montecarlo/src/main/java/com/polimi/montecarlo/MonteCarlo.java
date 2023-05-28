@@ -6,9 +6,12 @@ import java.io.File;
 
 import org.graalvm.polyglot.Value;
 
+import java.nio.file.Paths;
+
 public class MonteCarlo extends Benchmark {
 
-    private static final String PATH_TO_BINDED_FUNCTIONS = "/home/ubuntu/montecarlo-benchmarking/montecarlo/cpp_libs/";
+    // Dynamically get the path of cpp_libs folder
+    private static final String PATH_TO_BINDED_FUNCTIONS = Paths.get("").toAbsolutePath().toString() + "/cpp_libs/";
 
     /// Kernels
     private Value monteCarloOneBlockPerOptionKernelFunction;
