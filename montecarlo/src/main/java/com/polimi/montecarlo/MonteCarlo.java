@@ -305,7 +305,7 @@ public class MonteCarlo extends Benchmark {
                         .abs(callValueBS - plan[gpu_index].getCallValue()[option_index].getExpected());
                 ref = callValueBS;
                 sumDelta += delta;
-                sumRef = Math.abs(ref);
+                sumRef += Math.abs(ref);
                 if (delta > 1e-6) {
                     sumReserve += plan[gpu_index].getCallValue()[option_index].getConfidence() / delta;
                 }
@@ -314,7 +314,7 @@ public class MonteCarlo extends Benchmark {
         sumReserve /= OPT_N;
         
         System.out.println("Test Summary...");
-        System.out.println("L1 norm        : " + (sumDelta / sumRef));
+        System.out.printf("L1 norm        : %E%n", sumDelta / sumRef);
         System.out.println("Average reserve: " + sumReserve);
         if(sumReserve <= 1.0f)
             throw new RuntimeException("Test failed"); 
