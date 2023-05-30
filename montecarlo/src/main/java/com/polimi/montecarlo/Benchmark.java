@@ -183,7 +183,8 @@ public abstract class Benchmark {
     protected abstract void runTest(int iteration);
 
     /**
-     * 
+     * Close the test computation
+     * TODO: maybe remove it from here and move it in a private method inside montecarlo, which is then called inside runTEst
      * @param iteration the current number of the iteration
      */
     protected abstract void closeTest(int iteration);

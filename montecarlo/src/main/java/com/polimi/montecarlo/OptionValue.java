@@ -8,6 +8,8 @@ public class OptionValue {
        this.Confidence = Confidence;
     }
 
+    /// GETTERS
+
     public float getExpected() {
         return Expected;
     }
@@ -15,6 +17,8 @@ public class OptionValue {
     public float getConfidence() {
         return Confidence;
     }
+
+    /// SETTERS
 
     public void setExpected(float Expected) {
         this.Expected = Expected;
