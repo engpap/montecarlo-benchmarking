@@ -84,8 +84,10 @@ public abstract class Benchmark {
                 cpuValidation();
             }
 
+            /* NOT RELEVANT FOR THIS BENCHMARK BECAUSE IT COMPUTES THOUSANDS OF OPTIONS
             if(config.debug)
-                System.out.println("["+i+"] VALIDATION \nCPU: " + benchmarkResults.cpu_result+"\nGPU: " + benchmarkResults.currentIteration().gpu_result);
+               System.out.println("["+i+"] VALIDATION \nCPU: " + benchmarkResults.cpu_result+"\nGPU: " + benchmarkResults.currentIteration().gpu_result);
+            */
         }
 
         // Save the benchmark results
