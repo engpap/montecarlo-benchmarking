@@ -11,6 +11,8 @@ public class OptionData {
         this.V = V;
     }
 
+    // GETTERS
+
     public float getS() {
         return S;
     }

@@ -1,8 +1,0 @@
-config.size = optionCount
-config.numBlocks = gridSize
-
-
-TODO NEXT:
-- run it
-- adjust gridSize
-- implement remaing funcitons in main()

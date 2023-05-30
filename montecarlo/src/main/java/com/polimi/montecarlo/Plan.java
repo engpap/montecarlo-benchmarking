@@ -22,17 +22,25 @@ public class Plan {
     private int pathN;
     private int gridSize;
 
-    /// This class resembles the plan->um_OptionData struct in MonteCarlo_kernel.cu of a single plan element
+    /**
+     * This class resembles the plan->um_OptionData struct in MonteCarlo_kernel.cu of a single plan element.
+     */ 
     private class OptionData_Value { private Value S, X, MuByT, VBySqrtT; } 
 
-    /// This class resembles the plan->um_CallValue struct in MonteCarlo_kernel.cu of a single plan element
+    /**
+     * This class resembles the plan->um_CallValue struct in MonteCarlo_kernel.cu of a single plan element.
+     */ 
     private class OptionValue_Value { private Value Expected, Confidence; }
 
-    /// GrCUDA does not directly support unsigned integer data types, as Java itself doesn't have built-in support for unsigned integers.
-    /// However, WE can work around this by using a larger data type. For example, we can use long to represent an unsigned int from C++.
-    /// This allows you to use the full range of unsigned int values from C++, since a long in Java has more bits than an int and thus can 
-    /// represent larger values. 
-    /// rngStates is an array of curandState states, thus we decompose curandState struct into its components.
+    /**
+     * This class resembles the curandState struct, found in curand_kernel.h.
+     * 
+     * @implNote GrCUDA does not directly support unsigned integer data types, as Java itself doesn't have built-in support for unsigned integers.
+     * However, we can work around this by using a larger data type. For example, we can use long to represent an unsigned int from C++.
+     * This allows you to use the full range of unsigned int values from C++, since a long in Java has more bits than an int and thus can 
+     * represent larger values. 
+     * @implNote since rngStates is an array of curandState states, we decompose curandState struct into arrays of its components.
+     */
     private class CurandState {
         private Value d;
         private Value v;
@@ -42,8 +50,9 @@ public class Plan {
         private Value boxmuller_extra_double;
     }
 
-    /// Constructor
+    /// CONSTRUCTOR
     public Plan(int optionCount) {
+        // Initialize the optionData and optionValue arrays
         this.optionCount = optionCount;
         this.optionData = new OptionData[optionCount];
         this.callValue = new OptionValue[optionCount];
@@ -59,15 +68,35 @@ public class Plan {
         this.optionCount = optionCount;
     }
 
+    /**
+     * Initializes the plan's optionData array, copying it from the array passed as input, from
+     * index l to index r.
+     * 
+     * @param optionData the option array.
+     * @param l the index of the first option to copy.
+     * @param r the index of the option after the last option to copy.
+     */
     public void setOptionData(OptionData[] optionData, int l, int r) {
+        int c = 0;
         for (int i = l; i < r; i++) {
-            this.optionData[i] = optionData[i];
+            this.optionData[c] = optionData[i];
+            c++;
         }
     }
 
+    /**
+     * Initializes the plan's callValue array, copying it from the array passed as input, from
+     * index l to index r.
+     * 
+     * @param callValue the call value array.
+     * @param l the index of the first call value to copy.
+     * @param r the index of the call value after the last option to copy.
+     */
     public void setCallValue(OptionValue[] callValue, int l, int r) {
+        int c = 0;
         for (int i = l; i < r; i++) {
-            this.callValue[i] = callValue[i];
+            this.callValue[c] = callValue[i];
+            c++;
         }
     }
 
