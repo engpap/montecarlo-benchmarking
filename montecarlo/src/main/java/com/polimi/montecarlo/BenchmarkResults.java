@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -54,6 +56,42 @@ public class BenchmarkResults {
                             ".json";
 
             objectMapper.writeValue(new File(config.results_path+"/"+ sb), this);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public void saveToCsvFile() {
+        try {
+
+            String path_to_file = config.results_path+"/timings.csv";
+
+            File f = new File(path_to_file);
+            if (!f.exists() || f.isDirectory()){
+                String firstLineString = "Device_Selection_Policy,Problem_scaling,Number_of_GPUs,Total_number_of_options,Number_of_paths,Init_time_ms,Execution_time_ms";
+                PrintWriter writer = new PrintWriter(f);
+                writer.println(firstLineString);
+                writer.close();
+            }
+            float initTime = 0;
+            float execTime = 0;
+            for(Phase phase : this.currentIteration().phases){
+                if(phase.phaseName.equals("init") || phase.phaseName.equals("alloc"))
+                    //initTime += phase.executionTime_sec*1000F;
+                    initTime += phase.executionTime_sec;
+                if(phase.phaseName.equals("execution"))
+                    //execTime += phase.executionTime_sec*1000F;
+                    execTime += phase.executionTime_sec;
+            }
+    
+            FileWriter fw = new FileWriter(f, true);
+            PrintWriter writer = new PrintWriter(fw);
+            String line = config.deviceSelectionPolicy + "," + config.scalingChoice + "," +  String.valueOf(config.size) + "," + String.valueOf(config.numGpus) + "," +  String.valueOf(config.optN) + "," +  String.valueOf(config.pathN) + "," + String.valueOf(initTime) + "," + String.valueOf(execTime);
+            writer.println(line);
+            writer.close();
+            
+               
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -1,6 +1,7 @@
 {
-  "num_iter": 2,
-  "reInit": false,
+  "num_iter": 7,
+  "reAlloc": true,
+  "reInit": true,
   "randomInit": false,
   "cpuValidation": true,
   "heap_size": 470,

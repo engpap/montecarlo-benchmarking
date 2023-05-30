@@ -3,6 +3,8 @@ package com.polimi.montecarlo;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
+
+import org.graalvm.compiler.core.common.type.SymbolicJVMCIReference;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
 
@@ -88,6 +90,9 @@ public abstract class Benchmark {
             if(config.debug)
                System.out.println("["+i+"] VALIDATION \nCPU: " + benchmarkResults.cpu_result+"\nGPU: " + benchmarkResults.currentIteration().gpu_result);
             */
+
+            // At every iteration, save the results to a csv file
+            benchmarkResults.saveToCsvFile();
         }
 
         // Save the benchmark results
@@ -109,10 +114,13 @@ public abstract class Benchmark {
      * @param functionToTime the function to time passed like "class::funName"
      */
     private void time(int iteration, String phaseName, Consumer<Integer> functionToTime){
-        long begin = System.nanoTime();
+        //long begin = System.nanoTime();
+        long begin = System.currentTimeMillis();
         functionToTime.accept(iteration);
-        long end = System.nanoTime();
-        benchmarkResults.addPhaseToCurrentIteration(phaseName, (end - begin)/ 1000000000F);
+        //long end = System.nanoTime();
+        long end = System.currentTimeMillis();
+        //benchmarkResults.addPhaseToCurrentIteration(phaseName, (end - begin)/ 1000000000F);
+        benchmarkResults.addPhaseToCurrentIteration(phaseName, (end - begin));
     }
 
     protected void deallocDeviceArrays(){
@@ -184,7 +192,6 @@ public abstract class Benchmark {
 
     /**
      * Close the test computation
-     * TODO: maybe remove it from here and move it in a private method inside montecarlo, which is then called inside runTEst
      * @param iteration the current number of the iteration
      */
     protected abstract void closeTest(int iteration);

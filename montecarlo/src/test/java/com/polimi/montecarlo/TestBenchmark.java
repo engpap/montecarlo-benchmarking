@@ -40,11 +40,13 @@ public class TestBenchmark
     @Before
     public void init() throws IOException, InterruptedException {
         //create the folder to store the json results of the benchmarks
+
         PATH = "/home/ubuntu/montecarlo-benchmarking/montecarlo/src/test/java/com/polimi/montecarlo";
+        this.results_path = "./results/";
+        /*
         Format formatter = new SimpleDateFormat("yyyy_MM_dd_hh_mm_ss");
         Date currentDate = new Date();
-        String results_path = "./results/"+formatter.format(currentDate);
-        this.results_path = results_path;
+
 
         int i=0;
         while(!new File(results_path).mkdirs()){
@@ -64,7 +66,7 @@ public class TestBenchmark
             int exitCode = process.waitFor();
             assertEquals("Return value should be 0", 0, exitCode);
         }
-
+        */
         // Get the model of GPUs installed in the system
         Set<GPU> detectedGPUS = new HashSet<>();
         ProcessBuilder builder = new ProcessBuilder();

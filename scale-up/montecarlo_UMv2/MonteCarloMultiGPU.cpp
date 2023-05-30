@@ -122,7 +122,7 @@ static CUT_THREADPROC solverThread(TOptionPlan *plan)
 
     // WARNING: Following line of code has been inserted by @engpap
     // Start init timer
-    auto start_init = std::chrono::high_resolution_clock::now();
+    auto start_init = std::chrono::steady_clock::now();
 
     // Allocate intermediate memory for MC integrator and initialize
     // RNG states
@@ -132,9 +132,9 @@ static CUT_THREADPROC solverThread(TOptionPlan *plan)
 
     // WARNING: Following 2 lines of code has been inserted by @engpap
     // Record init time
-    auto end_init = std::chrono::high_resolution_clock::now();
+    auto end_init = std::chrono::steady_clock::now();
     // Start MonteCarlo timer
-    auto start_mc = std::chrono::high_resolution_clock::now();
+    auto start_mc = std::chrono::steady_clock::now();
     
     // Main computation
     MonteCarloGPU(plan);
@@ -143,7 +143,7 @@ static CUT_THREADPROC solverThread(TOptionPlan *plan)
 
     // WARNING: Following 3 lines of code has been inserted by @engpap
     // Record MC time
-    auto end_mc = std::chrono::high_resolution_clock::now();
+    auto end_mc = std::chrono::steady_clock::now();
 
     // Print timing results
     init_mutex.lock();
@@ -188,7 +188,7 @@ static void multiSolver(TOptionPlan *plan, int nPlans)
 
     // WARNING: Following line of code has been inserted by @engpap
     // Start init timer
-    auto start_init = std::chrono::high_resolution_clock::now();
+    auto start_init = std::chrono::steady_clock::now();
 
     for (int i=0 ; i<nPlans ; i++)
     {
@@ -211,7 +211,7 @@ static void multiSolver(TOptionPlan *plan, int nPlans)
     
     // WARNING: Following line of code has been inserted by @engpap
     // Record init time
-    auto end_init = std::chrono::high_resolution_clock::now();
+    auto end_init = std::chrono::steady_clock::now();
 
 
     //Start the timer
@@ -220,7 +220,7 @@ static void multiSolver(TOptionPlan *plan, int nPlans)
 
     // WARNING: Following line of code has been inserted by @engpap
     // Start MonteCarlo timer
-    auto start_mc = std::chrono::high_resolution_clock::now();
+    auto start_mc = std::chrono::steady_clock::now();
 
     for (int i=0; i<nPlans; i++)
     {
@@ -240,7 +240,7 @@ static void multiSolver(TOptionPlan *plan, int nPlans)
     
     // WARNING: Following 3 lines of code has been inserted by @engpap
     // Record MC time
-    auto end_mc = std::chrono::high_resolution_clock::now();
+    auto end_mc = std::chrono::steady_clock::now();
 
     // Print timing results
     duration_init = std::chrono::duration_cast<std::chrono::duration<double>>(end_init - start_init).count();

@@ -64,7 +64,9 @@ public class MonteCarlo extends Benchmark {
         nOptions = adjustProblemSizeFunction.execute(config.numGpus, nOptions).asInt();
         int scale = (strongScaling) ? 1 : config.numGpus;
         OPT_N = nOptions * scale;
+        config.optN = OPT_N; // useful for printing out results on .csv file
         int PATH_N = 262144;
+        config.pathN = PATH_N; // useful for printing out results on .csv file
 
         // Instantiate the optionData and OptionValue arrays
         optionData = new OptionData[OPT_N];
