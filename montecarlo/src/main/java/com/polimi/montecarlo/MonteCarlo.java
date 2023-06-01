@@ -145,7 +145,9 @@ public class MonteCarlo extends Benchmark {
      * them to the respective Value instances.
      */
     private void setupKernelFunctions() {
-        String path_to_binded_kernels = PATH_TO_BINDED_FUNCTIONS + "kernels.ptx";
+        //TODO: find a better way for this
+        String GPU = config.gpuModel.contains("P100") ? "p100" : "v100";
+        String path_to_binded_kernels = PATH_TO_BINDED_FUNCTIONS + "kernels_" + GPU + ".ptx";
         Value cu = context.eval("grcuda", "CU");
         checkFileExists(path_to_binded_kernels);
 
