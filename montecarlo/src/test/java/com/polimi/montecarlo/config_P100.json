@@ -6,7 +6,7 @@
   "cpuValidation": true,
   "heap_size": 470,
   "debug": true,
-  "nvprof_profile": false,
+  "nvprof_profile": true,
   "num_elem": {
     "MonteCarlo" : [1024]
   },
@@ -26,8 +26,7 @@
   "time_computation": [false],
   "num_gpus": [1],
   "block_size1d": {
-    "MonteCarlo" : 256,
-    "B1": 64
+    "MonteCarlo" : 256
   },
   "block_size2d": {
     "B1":  8

@@ -1,34 +1,33 @@
 {
-    "num_iter": 30,
-    "reAlloc": true,
-    "reInit": true,
-    "randomInit": false,
-    "cpuValidation": false,
-    "heap_size": 470,
-    "debug": true,
-    "nvprof_profile": false,
-    "num_elem": {
-      "B1": [160000000, 250000000, 500000000, 800000000, 950000000]
-    },
-    "benchmarks": ["B1"],
-    "numBlocks": {
-      "B1":  64
-    },
-    "exec_policies" : ["async"],
-    "dependency_policies": ["with-const"],
-    "new_stream_policies": ["always-new"],
-    "parent_stream_policies": ["disjoint"],
-    "choose_device_policies": ["round-robin"],
-    "memory_advise": ["none"],
-    "prefetch": [false],
-    "stream_attach": [false],
-    "time_computation": [false],
-    "num_gpus": [1],
-    "block_size1d": {
-      "MonteCarlo" : 256,
-      "B1": 64
-    },
-    "block_size2d": {
-      "B1":  8
-    }
+  "num_iter": 7,
+  "reAlloc": true,
+  "reInit": true,
+  "randomInit": false,
+  "cpuValidation": true,
+  "heap_size": 470,
+  "debug": true,
+  "nvprof_profile": false,
+  "num_elem": {
+    "MonteCarlo" : [1024]
+  },
+  "benchmarks": ["MonteCarlo"],
+  "numBlocks": {
+    "MonteCarlo" : 1024
+  },
+  "exec_policies" : ["async"],
+  "dependency_policies": ["with-const"],
+  "new_stream_policies": ["always-new"],
+  "parent_stream_policies": ["disjoint"],
+  "choose_device_policies": ["round-robin"],
+  "memory_advise": ["none"],
+  "scalingChoice": ["weak", "strong"],
+  "prefetch": [false],
+  "stream_attach": [false],
+  "time_computation": [false],
+  "num_gpus": [1],
+  "block_size1d": {
+    "MonteCarlo" : 256
+  },
+  "block_size2d": {
   }
+}

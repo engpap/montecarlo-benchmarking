@@ -59,10 +59,12 @@
     </dependency>
 
     <dependency>
-    <groupId>com.nvidia</groupId>
-    <artifactId>grcuda</artifactId>
-    <version>1.0-SNAPSHOT</version>
-  </dependency>  
+        <groupId>com.nvidia</groupId>
+        <artifactId>grcuda</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </dependency>  
+
+
   </dependencies>
 
   <build>

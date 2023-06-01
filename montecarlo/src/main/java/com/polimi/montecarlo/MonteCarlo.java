@@ -1,6 +1,6 @@
 package com.polimi.montecarlo;
 
-import static org.junit.Assert.assertTrue;
+//import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
