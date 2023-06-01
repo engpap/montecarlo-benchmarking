@@ -1,8 +1,8 @@
 package com.polimi.montecarlo;
 
-//import static org.junit.Assert.assertTrue;
-
 import java.io.File;
+
+import static org.junit.Assert.assertTrue;
 
 import org.graalvm.polyglot.Value;
 
@@ -364,7 +364,7 @@ public class MonteCarlo extends Benchmark {
         System.out.println("Average reserve: " + sumReserve);
         if(sumReserve <= 1.0f)
             throw new RuntimeException("Test failed"); 
-        //assertTrue("Test failed!", sumReserve > 1.0f);
+        assertTrue("Test Failed", sumReserve > 1.0f);
     }
 
 }

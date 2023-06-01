@@ -118,7 +118,6 @@ public class TestBenchmark
         JsonReader reader = new JsonReader(new FileReader(CONFIG_PATH));
         Config parsedConfig = gson.fromJson(reader, Config.class);
         System.out.println(gson.toJson(parsedConfig)); // print the current configuration
-
         iterateAllPossibleConfig(parsedConfig);
     }
 
