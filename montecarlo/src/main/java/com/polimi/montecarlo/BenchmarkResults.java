@@ -69,7 +69,7 @@ public class BenchmarkResults {
 
             File f = new File(path_to_file);
             if (!f.exists() || f.isDirectory()){
-                String firstLineString = "Device_Selection_Policy,Problem_scaling,Number_of_GPUs,Total_number_of_options,Number_of_paths,Init_time_ms,Execution_time_ms";
+                String firstLineString = "Device_Selection_Policy,Prefetch,Problem_scaling,Number_of_GPUs,Total_number_of_options,Number_of_paths,Init_time_ms,Execution_time_ms";
                 PrintWriter writer = new PrintWriter(f);
                 writer.println(firstLineString);
                 writer.close();
@@ -78,16 +78,16 @@ public class BenchmarkResults {
             float execTime = 0;
             for(Phase phase : this.currentIteration().phases){
                 if(phase.phaseName.equals("init") || phase.phaseName.equals("alloc"))
-                    //initTime += phase.executionTime_sec*1000F;
-                    initTime += phase.executionTime_sec;
-                if(phase.phaseName.equals("execution"))
-                    //execTime += phase.executionTime_sec*1000F;
-                    execTime += phase.executionTime_sec;
+                    initTime += phase.executionTime_sec*1000F; // to get ms
+                    //initTime += phase.executionTime_sec;
+                if(phase.phaseName.equals("execution") || phase.phaseName.equals("close"))
+                    execTime += phase.executionTime_sec*1000F; // to get ms
+                    //execTime += phase.executionTime_sec;
             }
     
             FileWriter fw = new FileWriter(f, true);
             PrintWriter writer = new PrintWriter(fw);
-            String line = config.deviceSelectionPolicy + "," + config.scalingChoice + "," +  String.valueOf(config.size) + "," + String.valueOf(config.numGpus) + "," +  String.valueOf(config.optN) + "," +  String.valueOf(config.pathN) + "," + String.valueOf(initTime) + "," + String.valueOf(execTime);
+            String line = config.deviceSelectionPolicy + ","+ String.valueOf(config.inputPrefetch) + "," + config.scalingChoice + "," +  String.valueOf(config.size) + "," + String.valueOf(config.numGpus) + "," +  String.valueOf(config.optN) + "," +  String.valueOf(config.pathN) + "," + String.valueOf(initTime) + "," + String.valueOf(execTime);
             writer.println(line);
             writer.close();
             

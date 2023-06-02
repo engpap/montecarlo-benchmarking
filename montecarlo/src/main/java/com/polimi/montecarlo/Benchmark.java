@@ -39,7 +39,11 @@ public abstract class Benchmark {
             long overall_gpu_start = System.nanoTime();
 
             // Allocate memory for the benchmark
-            
+    
+            if(config.nvprof_profile){
+                context.eval("grcuda", "cudaProfilerStart").execute();
+            }            
+
             if (config.reAlloc || i == 0){
                 if(config.debug)
                     System.out.println("["+i+"] alloc");
@@ -54,15 +58,11 @@ public abstract class Benchmark {
                 time(i, "init", this::initializeTest);
             }
 
-            // Reset the result
+            /* // Reset the result
             if(config.debug)
                 System.out.println("["+i+"] reset");
-            time(i, "reset", this::resetIteration);
-
-            if(config.nvprof_profile){
-                context.eval("grcuda", "cudaProfilerStart").execute();
-            }
-
+            time(i, "reset", this::resetIteration);*/
+            
             // Execute the benchmark
             if(config.debug)
                 System.out.println("["+i+"] execution");
@@ -96,8 +96,7 @@ public abstract class Benchmark {
         }
 
         // Save the benchmark results
-        // benchmarkResults.saveToJsonFile(); TODO: remove this comment to save the results to a json file
-
+        //benchmarkResults.saveToJsonFile(); //TODO: remove this comment to save the results to a json file
 
         // Free the allocated arrays
         deallocDeviceArrays();
@@ -109,18 +108,19 @@ public abstract class Benchmark {
     /**
      * This method is used to time the function passed to it.
      * It will add the timing and the phase name to the benchmarkResult attribute.
+     * System.nanoTime method can only be used to measure elapsed time and is not related to any other notion of system or wall-clock time. 
      * @param iteration the current iteration of the benchmark
      * @param phaseName the current phase of the benchmark
      * @param functionToTime the function to time passed like "class::funName"
      */
     private void time(int iteration, String phaseName, Consumer<Integer> functionToTime){
-        //long begin = System.nanoTime();
-        long begin = System.currentTimeMillis();
+        long begin = System.nanoTime();
+        //long begin = System.currentTimeMillis();
         functionToTime.accept(iteration);
-        //long end = System.nanoTime();
-        long end = System.currentTimeMillis();
-        //benchmarkResults.addPhaseToCurrentIteration(phaseName, (end - begin)/ 1000000000F);
-        benchmarkResults.addPhaseToCurrentIteration(phaseName, (end - begin));
+        long end = System.nanoTime();
+        //long end = System.currentTimeMillis();
+        benchmarkResults.addPhaseToCurrentIteration(phaseName, (end - begin)/ 1000000000F); // to sec
+        //benchmarkResults.addPhaseToCurrentIteration(phaseName, (end - begin));
     }
 
     protected void deallocDeviceArrays(){

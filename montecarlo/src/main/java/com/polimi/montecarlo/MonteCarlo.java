@@ -235,11 +235,10 @@ public class MonteCarlo extends Benchmark {
     }
 
     /**
-     * TODO: update this in order to reinitialize data?, probably just call init and allocate again?
+     * Not used
      */
     @Override
     protected void resetIteration(int iteration) {
-        //throw new UnsupportedOperationException("Unimplemented method 'resetIteration'");
     }
 
     /**
@@ -300,7 +299,7 @@ public class MonteCarlo extends Benchmark {
      * It copies the data from the Value arrays to the callValue arrays.
      */
     @Override
-    protected void closeTest(int iteration) { // TRANSLATION FINISHED!
+    protected void closeTest(int iteration) { 
         for (int gpu_index = 0; gpu_index < config.numGpus; gpu_index++) {
             for (int i = 0; i < plan[gpu_index].getOptionCount(); i++) {       
                 double RT = plan[gpu_index].getOptionData()[i].getR() * plan[gpu_index].getOptionData()[i].getT();

@@ -1,12 +1,12 @@
 {
-  "num_iter": 7,
+  "num_iter": 1,
   "reAlloc": true,
   "reInit": true,
   "randomInit": false,
   "cpuValidation": true,
   "heap_size": 470,
   "debug": true,
-  "nvprof_profile": true,
+  "nvprof_profile": false,
   "num_elem": {
     "MonteCarlo" : [1024]
   },

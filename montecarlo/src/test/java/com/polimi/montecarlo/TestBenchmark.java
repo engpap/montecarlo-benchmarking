@@ -5,8 +5,6 @@ import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.GsonBuilder;
 
-import org.graalvm.polyglot.Context;
-import org.graalvm.polyglot.Value;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,8 +14,6 @@ import static org.junit.Assume.assumeTrue;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.text.Format;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -185,8 +181,8 @@ public class TestBenchmark
                                                             blockSize1D = parsedConfig.block_size1d.get(bench);
                                                             if(blockSize1D != null) config.blockSize1D = blockSize1D;
     
-                                                            blockSize2D = parsedConfig.block_size2d.get(bench);
-                                                            if(blockSize2D != null) config.blockSize2D = blockSize2D;
+                                                            //blockSize2D = parsedConfig.block_size2d.get(bench);
+                                                            //if(blockSize2D != null) config.blockSize2D = blockSize2D;
     
                                                             config.debug = parsedConfig.debug;
                                                             config.benchmarkName = bench;
