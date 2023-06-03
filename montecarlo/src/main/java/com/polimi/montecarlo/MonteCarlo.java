@@ -291,8 +291,10 @@ public class MonteCarlo extends Benchmark {
                             plan[gpu_index].getConfidence(),
                             plan[gpu_index].getPathN(),
                             plan[gpu_index].getOptionCount());
-
-            context.eval("grcuda", "cudaMemPrefetchAsync").execute();
+            
+            // The following prefetches do no improve performance
+            //context.eval("grcuda", "cudaMemPrefetchAsync").execute(plan[gpu_index].getExpected(), (long)(plan[gpu_index].getOptionCount()*4), -1);
+            //context.eval("grcuda", "cudaMemPrefetchAsync").execute(plan[gpu_index].getConfidence(), (long)(plan[gpu_index].getOptionCount()*4), -1);
         }
     }
 
