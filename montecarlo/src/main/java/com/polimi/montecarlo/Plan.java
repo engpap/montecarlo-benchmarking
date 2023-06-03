@@ -84,6 +84,10 @@ public class Plan {
         }
     }
 
+    public void setOptionData(int index, OptionData optionData) {
+        this.optionData[index] = optionData;
+    }
+
     /**
      * Initializes the plan's callValue array, copying it from the array passed as input, from
      * index l to index r.
@@ -98,6 +102,10 @@ public class Plan {
             this.callValue[c] = callValue[i];
             c++;
         }
+    }
+
+    public void setCallValue(int index, OptionValue callValue) {
+        this.callValue[index] = callValue;
     }
 
     public void setCallValueExpected(int index, float Expected){

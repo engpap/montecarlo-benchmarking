@@ -28,10 +28,6 @@ public class MonteCarlo extends Benchmark {
     // Total number of options in the current benchmark run
     private int OPT_N;
 
-    /// OptionData and CallValueGPU are arrays of OPT_N elements
-    private OptionData[] optionData;
-    private OptionValue[] callValueGPU;
-
     // OptionPlan struct equivalent, array of config.numGpus elements
     private Plan[] plan;
 
@@ -68,25 +64,6 @@ public class MonteCarlo extends Benchmark {
         int PATH_N = 262144;
         config.pathN = PATH_N; // useful for printing out results on .csv file
 
-        // Instantiate the optionData and OptionValue arrays
-        optionData = new OptionData[OPT_N];
-        callValueGPU = new OptionValue[OPT_N];
-        float S, X, T, R, V;
-        float Expected, Confidence;
-        // Initialize each option's parameters
-        for (int i = 0; i < OPT_N; i++) {
-            S = Utils.randFloat(5.0f, 50.0f);
-            X = Utils.randFloat(10.0f, 25.0f);
-            T = Utils.randFloat(1.0f, 5.0f);
-            R = 0.06f;
-            V = 0.10f;
-            optionData[i] = new OptionData(S, X, T, R, V);
-
-            Expected = -1.0f;
-            Confidence = -1.0f;
-            callValueGPU[i] = new OptionValue(Expected, Confidence);
-        }
-
         // Instantiate the plan array corresponding to TOptionPlan[GPU_N] (optionSolver)
         this.plan = new Plan[config.numGpus];
 
@@ -100,21 +77,27 @@ public class MonteCarlo extends Benchmark {
             }
         }
 
-        //TODO: remove this or remove the if above, better this since the array are instanciated in the constructor
-        // Take into account cases with "odd" option counts
-        //for (int gpu_index = 0; gpu_index < (OPT_N % config.numGpus); gpu_index++) {
-        //    plan[gpu_index].setOptionCount(plan[gpu_index].getOptionCount() + 1);
-        //}
+        float S, X, T, R, V;
+        float Expected, Confidence;
 
         // Assign GPU option and callValue ranges to each Plan, as well as other parameters required by the benchmark
-        int gpuBase = 0;
         for (int gpu_index = 0; gpu_index < config.numGpus; gpu_index++) {
             plan[gpu_index].setDevice(gpu_index);
-            plan[gpu_index].setOptionData(optionData, gpuBase, gpuBase + plan[gpu_index].getOptionCount());
-            plan[gpu_index].setCallValue(callValueGPU, gpuBase, gpuBase + plan[gpu_index].getOptionCount());
+    
+            for (int i = 0; i < plan[gpu_index].getOptionCount(); i++) {
+                S = Utils.randFloat(5.0f, 50.0f);
+                X = Utils.randFloat(10.0f, 25.0f);
+                T = Utils.randFloat(1.0f, 5.0f);
+                R = 0.06f;
+                V = 0.10f;
+                plan[gpu_index].setOptionData(i, new OptionData(S, X, T, R, V));
+                Expected = -1.0f;
+                Confidence = -1.0f;
+                plan[gpu_index].setCallValue(i, new OptionValue(Expected, Confidence));
+            }            
             plan[gpu_index].setPathN(PATH_N);
             plan[gpu_index].setGridSize(adjustGridSizeFunction.execute(plan[gpu_index].getDevice(), plan[gpu_index].getOptionCount()).asInt());
-            gpuBase += plan[gpu_index].getOptionCount();
+        
         }
     }
 
