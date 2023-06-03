@@ -180,7 +180,7 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
     }
 
     // Set the CPU as the preferred location for the input data
-    checkCudaErrors(cudaMemAdvise(plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount), cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId)); 
+    checkCudaErrors(cudaMemPrefetchAsync((__TOptionData *)(plan->um_OptionData), sizeof(__TOptionData) * (plan->optionCount), cudaCpuDeviceId, stream)); 
 
     // Prefetch the output data to the device
     checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), plan->device, stream));
@@ -212,5 +212,5 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
     getLastCudaError("MonteCarloOneBlockPerOption() execution failed\n");
 
     // Prefetch the output data to the CPU
-    checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), cudaCpuDeviceId));
+    checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), cudaCpuDeviceId, stream));
 }

@@ -107,7 +107,7 @@ StopWatchInterface **hTimer = NULL;
 
 float duration_init = 0;
 float duration_mc = 0;
-std::chrono::high_resolution_clock::time_point** times;
+std::chrono::steady_clock::time_point** times;
 static CUT_THREADPROC solverThread(TOptionPlan *plan)
 {   
     //Init GPU
@@ -121,7 +121,7 @@ static CUT_THREADPROC solverThread(TOptionPlan *plan)
 
     // WARNING: Following line of code has been inserted by @engpap
     // Start init timer
-    auto start_init = std::chrono::high_resolution_clock::now();
+    auto start_init = std::chrono::steady_clock::now();
 
     // Allocate intermediate memory for MC integrator and initialize
     // RNG states
@@ -131,25 +131,14 @@ static CUT_THREADPROC solverThread(TOptionPlan *plan)
 
     // WARNING: Following 2 lines of code has been inserted by @engpap
     // Record init time
-    auto end_init = std::chrono::high_resolution_clock::now();
+    auto end_init = std::chrono::steady_clock::now();
     // Start MonteCarlo timer
-    auto start_mc = std::chrono::high_resolution_clock::now();
+    auto start_mc = std::chrono::steady_clock::now();
     
     // Main computation
     MonteCarloGPU(plan);
 
     checkCudaErrors(cudaDeviceSynchronize());
-
-    // WARNING: Following 3 lines of code has been inserted by @engpap
-    // Record MC time
-    auto end_mc = std::chrono::high_resolution_clock::now();
-
-    int index = plan->device;
-    // Store timing results
-    times[0][index] = start_init;
-    times[1][index] = end_init;
-    times[2][index] = start_mc;
-    times[3][index] = end_mc;
 
     //Stop the timer
     sdkStopTimer(&hTimer[plan->device]);
@@ -158,6 +147,17 @@ static CUT_THREADPROC solverThread(TOptionPlan *plan)
     closeMonteCarloGPU(plan);
 
     cudaStreamSynchronize(0);
+
+    // WARNING: Following 3 lines of code has been inserted by @engpap
+    // Record MC time
+    auto end_mc = std::chrono::steady_clock::now();
+
+    int index = plan->device;
+    // Store timing results
+    times[0][index] = start_init;
+    times[1][index] = end_init;
+    times[2][index] = start_mc;
+    times[3][index] = end_mc;
 
     printf("solverThread() finished - GPU Device %d: %s\n", plan->device, deviceProp.name);
 
@@ -184,7 +184,7 @@ static void multiSolver(TOptionPlan *plan, int nPlans)
 
     // WARNING: Following line of code has been inserted by @engpap
     // Start init timer
-    auto start_init = std::chrono::high_resolution_clock::now();
+    auto start_init = std::chrono::steady_clock::now();
 
     for (int i=0 ; i<nPlans ; i++)
     {
@@ -207,7 +207,7 @@ static void multiSolver(TOptionPlan *plan, int nPlans)
     
     // WARNING: Following line of code has been inserted by @engpap
     // Record init time
-    auto end_init = std::chrono::high_resolution_clock::now();
+    auto end_init = std::chrono::steady_clock::now();
 
 
     //Start the timer
@@ -216,7 +216,7 @@ static void multiSolver(TOptionPlan *plan, int nPlans)
 
     // WARNING: Following line of code has been inserted by @engpap
     // Start MonteCarlo timer
-    auto start_mc = std::chrono::high_resolution_clock::now();
+    auto start_mc = std::chrono::steady_clock::now();
 
     for (int i=0; i<nPlans; i++)
     {
@@ -233,14 +233,6 @@ static void multiSolver(TOptionPlan *plan, int nPlans)
         checkCudaErrors(cudaSetDevice(plan[i].device));
         cudaEventSynchronize(events[i]);
     }
-    
-    // WARNING: Following 3 lines of code has been inserted by @engpap
-    // Record MC time
-    auto end_mc = std::chrono::high_resolution_clock::now();
-
-    // Print timing results
-    duration_init = std::chrono::duration_cast<std::chrono::duration<double>>(end_init - start_init).count();
-    duration_mc = std::chrono::duration_cast<std::chrono::duration<double>>(end_mc - start_mc).count();
 
     //Stop the timer
     sdkStopTimer(&hTimer[0]);
@@ -252,6 +244,15 @@ static void multiSolver(TOptionPlan *plan, int nPlans)
         checkCudaErrors(cudaStreamDestroy(streams[i]));
         checkCudaErrors(cudaEventDestroy(events[i]));
     }
+
+    // WARNING: Following 3 lines of code has been inserted by @engpap
+    // Record MC time
+    auto end_mc = std::chrono::steady_clock::now();
+
+    // Print timing results
+    duration_init = std::chrono::duration_cast<std::chrono::duration<double>>(end_init - start_init).count();
+    duration_mc = std::chrono::duration_cast<std::chrono::duration<double>>(end_mc - start_mc).count();
+
 }
 
 
@@ -442,9 +443,9 @@ int main(int argc, char **argv)
 
     if (use_threads || bqatest)
     {
-        times = new std::chrono::high_resolution_clock::time_point*[4];
+        times = new std::chrono::steady_clock::time_point*[4];
         for (int i = 0; i < 4; ++i) {
-            times[i] = new std::chrono::high_resolution_clock::time_point[GPU_N];
+            times[i] = new std::chrono::steady_clock::time_point[GPU_N];
         }
         //Start CPU thread for each GPU
         for (gpuIndex = 0; gpuIndex < GPU_N; gpuIndex++)
@@ -455,10 +456,10 @@ int main(int argc, char **argv)
         printf("main(): waiting for GPU results...\n");
         cutWaitForThreads(threadID, GPU_N);
 
-        std::chrono::high_resolution_clock::time_point start_init = times[0][0];
-        std::chrono::high_resolution_clock::time_point end_init = times[1][0];
-        std::chrono::high_resolution_clock::time_point start_mc = times[2][0];
-        std::chrono::high_resolution_clock::time_point end_mc = times[3][0];
+        std::chrono::steady_clock::time_point start_init = times[0][0];
+        std::chrono::steady_clock::time_point end_init = times[1][0];
+        std::chrono::steady_clock::time_point start_mc = times[2][0];
+        std::chrono::steady_clock::time_point end_mc = times[3][0];
         for (int i = 1; i < GPU_N; ++i) {
             if (times[0][i] < start_init)
                 start_init = times[0][i];
