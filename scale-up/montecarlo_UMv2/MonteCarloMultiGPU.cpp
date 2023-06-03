@@ -107,8 +107,7 @@ StopWatchInterface **hTimer = NULL;
 
 float duration_init = 0;
 float duration_mc = 0;
-std::mutex mc_mutex, init_mutex;
-
+std::chrono::steady_clock::time_point** times;
 static CUT_THREADPROC solverThread(TOptionPlan *plan)
 {   
     //Init GPU
@@ -141,20 +140,6 @@ static CUT_THREADPROC solverThread(TOptionPlan *plan)
 
     checkCudaErrors(cudaDeviceSynchronize());
 
-    // WARNING: Following 3 lines of code has been inserted by @engpap
-    // Record MC time
-    auto end_mc = std::chrono::steady_clock::now();
-
-    // Print timing results
-    init_mutex.lock();
-    duration_init += std::chrono::duration_cast<std::chrono::duration<double>>(end_init - start_init).count();
-    init_mutex.unlock();
-
-    mc_mutex.lock();
-    duration_mc += std::chrono::duration_cast<std::chrono::duration<double>>(end_mc - start_mc).count();
-    mc_mutex.unlock();
-
-
     //Stop the timer
     sdkStopTimer(&hTimer[plan->device]);
 
@@ -162,6 +147,17 @@ static CUT_THREADPROC solverThread(TOptionPlan *plan)
     closeMonteCarloGPU(plan);
 
     cudaStreamSynchronize(0);
+
+    // WARNING: Following 3 lines of code has been inserted by @engpap
+    // Record MC time
+    auto end_mc = std::chrono::steady_clock::now();
+
+    int index = plan->device;
+    // Store timing results
+    times[0][index] = start_init;
+    times[1][index] = end_init;
+    times[2][index] = start_mc;
+    times[3][index] = end_mc;
 
     printf("solverThread() finished - GPU Device %d: %s\n", plan->device, deviceProp.name);
 
@@ -237,14 +233,6 @@ static void multiSolver(TOptionPlan *plan, int nPlans)
         checkCudaErrors(cudaSetDevice(plan[i].device));
         cudaEventSynchronize(events[i]);
     }
-    
-    // WARNING: Following 3 lines of code has been inserted by @engpap
-    // Record MC time
-    auto end_mc = std::chrono::steady_clock::now();
-
-    // Print timing results
-    duration_init = std::chrono::duration_cast<std::chrono::duration<double>>(end_init - start_init).count();
-    duration_mc = std::chrono::duration_cast<std::chrono::duration<double>>(end_mc - start_mc).count();
 
     //Stop the timer
     sdkStopTimer(&hTimer[0]);
@@ -256,6 +244,15 @@ static void multiSolver(TOptionPlan *plan, int nPlans)
         checkCudaErrors(cudaStreamDestroy(streams[i]));
         checkCudaErrors(cudaEventDestroy(events[i]));
     }
+
+    // WARNING: Following 3 lines of code has been inserted by @engpap
+    // Record MC time
+    auto end_mc = std::chrono::steady_clock::now();
+
+    // Print timing results
+    duration_init = std::chrono::duration_cast<std::chrono::duration<double>>(end_init - start_init).count();
+    duration_mc = std::chrono::duration_cast<std::chrono::duration<double>>(end_mc - start_mc).count();
+
 }
 
 
@@ -284,6 +281,7 @@ int main(int argc, char **argv)
 {
     char *multiMethodChoice = NULL;
     char *scalingChoice = NULL;
+    char *problemSize = NULL;
     bool use_threads = true;
     bool bqatest = false;
     bool strongScaling = false;
@@ -300,6 +298,7 @@ int main(int argc, char **argv)
 
     getCmdLineArgumentString(argc, (const char **)argv, "method", &multiMethodChoice);
     getCmdLineArgumentString(argc, (const char **)argv, "scaling", &scalingChoice);
+    getCmdLineArgumentString(argc, (const char **)argv, "size", &problemSize);
 
     if (checkCmdLineFlag(argc, (const char **)argv, "h") ||
         checkCmdLineFlag(argc, (const char **)argv, "help"))
@@ -349,7 +348,12 @@ int main(int argc, char **argv)
     //GPU number present in the system
     int GPU_N;
     checkCudaErrors(cudaGetDeviceCount(&GPU_N));
-    int nOptions = 1024 * 1024;
+
+    int nOptions = 0;
+    if ( problemSize == NULL)
+        nOptions = 512 * 512;
+    else
+        nOptions = std::stoi(problemSize)*std::stoi(problemSize);
 
     nOptions = adjustProblemSize(GPU_N, nOptions);
 
@@ -439,6 +443,10 @@ int main(int argc, char **argv)
 
     if (use_threads || bqatest)
     {
+        times = new std::chrono::steady_clock::time_point*[4];
+        for (int i = 0; i < 4; ++i) {
+            times[i] = new std::chrono::steady_clock::time_point[GPU_N];
+        }
         //Start CPU thread for each GPU
         for (gpuIndex = 0; gpuIndex < GPU_N; gpuIndex++)
         {
@@ -447,6 +455,29 @@ int main(int argc, char **argv)
 
         printf("main(): waiting for GPU results...\n");
         cutWaitForThreads(threadID, GPU_N);
+
+        std::chrono::steady_clock::time_point start_init = times[0][0];
+        std::chrono::steady_clock::time_point end_init = times[1][0];
+        std::chrono::steady_clock::time_point start_mc = times[2][0];
+        std::chrono::steady_clock::time_point end_mc = times[3][0];
+        for (int i = 1; i < GPU_N; ++i) {
+            if (times[0][i] < start_init)
+                start_init = times[0][i];
+            if (times[1][i] > end_init)
+                end_init = times[1][i];
+            if (times[2][i] < start_mc)
+                start_mc = times[2][i];
+            if (times[3][i] > end_mc)
+                end_mc = times[3][i];
+        }    
+
+        duration_init = std::chrono::duration_cast<std::chrono::duration<double>>(end_init - start_init).count();
+        duration_mc = std::chrono::duration_cast<std::chrono::duration<double>>(end_mc - start_mc).count();
+
+        for (int i = 0; i < 4; ++i) {
+            delete[] times[i];
+        }
+        delete[] times;
 
         printf("main(): GPU statistics, threaded\n");
 

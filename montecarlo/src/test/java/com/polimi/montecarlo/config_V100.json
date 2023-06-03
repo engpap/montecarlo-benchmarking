@@ -9,7 +9,7 @@
   "nvprof_profile": false,
   "num_elem": {
     "MonteCarlo": [
-      8192
+      512
     ]
   },
   "benchmarks": [

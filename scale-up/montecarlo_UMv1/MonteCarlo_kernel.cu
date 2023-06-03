@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Internal GPU-side data structures
 ////////////////////////////////////////////////////////////////////////////////
-#define MAX_OPTIONS (1024 * 1024 * 32)
+#define MAX_OPTIONS (1024 * 1024 * 64)
 
 // Preprocessed input option data
 typedef struct
@@ -132,14 +132,14 @@ static __global__ void rngSetupStates(
 
 extern "C" void initMonteCarloGPU(TOptionPlan *plan)
 {
+    // Allocate input and output data
     checkCudaErrors(cudaMallocManaged(&plan->um_OptionData, sizeof(__TOptionData) * (plan->optionCount)));
     checkCudaErrors(cudaMallocManaged(&plan->um_CallValue, sizeof(__TOptionValue) * (plan->optionCount)));
-    // Allocate internal device memory
     // Allocate states for pseudo random number generators
     checkCudaErrors(cudaMallocManaged((void **)&plan->rngStates,
                                       plan->gridSize * THREAD_N * sizeof(curandState)));
 
-    // Prefetch rngStates the the device
+    // Prefetch rngStates to the device
     checkCudaErrors(cudaMemPrefetchAsync(plan->rngStates, plan->gridSize * THREAD_N * sizeof(curandState), plan->device));
 
     // place each device pathN random numbers apart on the random number sequence
@@ -180,14 +180,13 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         return;
     }
 
-    // Prefetch um_OptionData on the CPU
+    // Prefetch the input data to the CPU
     checkCudaErrors(cudaMemPrefetchAsync((__TOptionData *)(plan->um_OptionData), plan->optionCount * sizeof(__TOptionData), cudaCpuDeviceId, stream));
 
-    // If method is threaded (stream_id = 0) -> Wait for prefetch to finish
-    if(stream == cudaStream_t(0))
-        checkCudaErrors(cudaStreamSynchronize(stream));
+    // Wait for prefetch to finish
+    checkCudaErrors(cudaStreamSynchronize(stream));
 
-    // Prefetch output data to the device
+    // Prefetch the output data to the device
     checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), plan->device, stream));
 
     __TOptionData *um_optionData = (__TOptionData *)plan->um_OptionData;
@@ -205,7 +204,7 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         um_optionData[i].VBySqrtT = (real)VBySqrtT;
     }
 
-    // Prefetch the data to the device (GPU) memory 
+    // Prefetch the input data to the device
     checkCudaErrors(cudaMemPrefetchAsync((__TOptionData *)(plan->um_OptionData), plan->optionCount * sizeof(__TOptionData), plan->device, stream));
 
     MonteCarloOneBlockPerOption<<<plan->gridSize, THREAD_N, 0, stream>>>(
@@ -216,6 +215,6 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
         plan->optionCount);
     getLastCudaError("MonteCarloOneBlockPerOption() execution failed\n");
 
-    // Prefetch um_CallValue on the CPU
-    checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), cudaCpuDeviceId, stream));
+    // Prefetch the output data to the CPU
+    checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), cudaCpuDeviceId));
 }
