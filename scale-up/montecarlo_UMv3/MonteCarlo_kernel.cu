@@ -224,5 +224,5 @@ extern "C" void MonteCarloGPU(TOptionPlan *plan, cudaStream_t stream)
     getLastCudaError("MonteCarloOneBlockPerOption() execution failed\n");
 
     // Prefetch um_CallValue on the CPU
-    checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), cudaCpuDeviceId));
+    checkCudaErrors(cudaMemPrefetchAsync((__TOptionValue *)(plan->um_CallValue), plan->optionCount * sizeof(__TOptionValue), cudaCpuDeviceId, stream));
 }
