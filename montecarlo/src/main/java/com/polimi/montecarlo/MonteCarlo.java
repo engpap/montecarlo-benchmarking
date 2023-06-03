@@ -291,6 +291,8 @@ public class MonteCarlo extends Benchmark {
                             plan[gpu_index].getConfidence(),
                             plan[gpu_index].getPathN(),
                             plan[gpu_index].getOptionCount());
+
+            context.eval("grcuda", "cudaMemPrefetchAsync").execute();
         }
     }
 
