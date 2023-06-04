@@ -1,0 +1,34 @@
+==78238== NVPROF is profiling process 78238, command: /home/ubuntu/graalvm-ce-java11-22.1.0/bin/java -jar /home/ubuntu/montecarlo-benchmarking/montecarlo/target/surefire/surefirebooter331197625681061359.jar /home/ubuntu/montecarlo-benchmarking/montecarlo/target/surefire 2023-06-03T12-53-15_652-jvmRun1 surefi
+==78238== Profiling application: /home/ubuntu/graalvm-ce-java11-22.1.0/bin/java -jar /home/ubuntu/montecarlo-benchmarking/montecarlo/target/surefire/surefirebooter331197625681061359.jar /home/ubuntu/montecarlo-benchmarking/montecarlo/target/surefire 2023-06-03T12-53-15_652-jvmRun1 surefi
+==78238== Profiling result:
+   Start  Duration            Grid Size      Block Size     Regs*    SSMem*    DSMem*           Device   Context    Stream        Unified Memory  Virtual Address  Name
+670.11ms  2.7241ms           (3200 1 1)       (256 1 1)        32        0B        0B  Tesla V100-SXM2         1        14                     -                -  rngSetupStates(unsigned int*, unsigned int*, int*, int*, float*, double*, int) [836]
+677.04ms         -                    -               -         -         -         -                -         -         -         PC 0x5207d1c0   0x7f8342000000  [Unified Memory CPU page faults]
+677.27ms         -                    -               -         -         -         -                -         -         -         PC 0x5207d1c0   0x7f8342100000  [Unified Memory CPU page faults]
+677.37ms         -                    -               -         -         -         -                -         -         -         PC 0x5207d1c0   0x7f8342200000  [Unified Memory CPU page faults]
+677.49ms         -                    -               -         -         -         -                -         -         -         PC 0x5207d1c0   0x7f8342300000  [Unified Memory CPU page faults]
+866.62ms         -                    -               -         -         -         -                -         -         -         PC 0x38c5fd42   0x7f8342010000  [Unified Memory CPU page faults]
+870.79ms         -                    -               -         -         -         -                -         -         -         PC 0x38c5fd42   0x7f8342110000  [Unified Memory CPU page faults]
+871.16ms         -                    -               -         -         -         -                -         -         -         PC 0x38c5fd42   0x7f8342210000  [Unified Memory CPU page faults]
+871.54ms         -                    -               -         -         -         -                -         -         -         PC 0x38c5fd42   0x7f8342310000  [Unified Memory CPU page faults]
+941.64ms         -                    -               -         -         -         -                -         -         -         PC 0x38c5fd42   0x7f8342020000  [Unified Memory CPU page faults]
+941.79ms         -                    -               -         -         -         -                -         -         -         PC 0x38c5fd42   0x7f8342120000  [Unified Memory CPU page faults]
+941.89ms         -                    -               -         -         -         -                -         -         -         PC 0x38c5fd42   0x7f8342220000  [Unified Memory CPU page faults]
+941.99ms         -                    -               -         -         -         -                -         -         -         PC 0x38c5fd42   0x7f8342320000  [Unified Memory CPU page faults]
+995.99ms         -                    -               -         -         -         -                -         -         -         PC 0x38c71ba4   0x7f8342040000  [Unified Memory CPU page faults]
+996.19ms         -                    -               -         -         -         -                -         -         -         PC 0x38c71ba4   0x7f8342140000  [Unified Memory CPU page faults]
+996.36ms         -                    -               -         -         -         -                -         -         -         PC 0x38c71ba4   0x7f8342240000  [Unified Memory CPU page faults]
+996.51ms         -                    -               -         -         -         -                -         -         -         PC 0x38c71ba4   0x7f8342340000  [Unified Memory CPU page faults]
+1.03704s         -                    -               -         -         -         -                -         -         -         PC 0x38c71ba4   0x7f8342080000  [Unified Memory CPU page faults]
+1.03747s         -                    -               -         -         -         -                -         -         -         PC 0x38c71ba4   0x7f8342280000  [Unified Memory CPU page faults]
+1.09756s  114.34us                    -               -         -         -         -  Tesla V100-SXM2         -         -            1.000000MB   0x7f8342000000  [Unified Memory Memcpy HtoD]
+1.09785s  111.65us                    -               -         -         -         -  Tesla V100-SXM2         -         -            1.000000MB   0x7f8342100000  [Unified Memory Memcpy HtoD]
+1.09843s  107.65us                    -               -         -         -         -  Tesla V100-SXM2         -         -            1.000000MB   0x7f8342200000  [Unified Memory Memcpy HtoD]
+1.09881s  107.39us                    -               -         -         -         -  Tesla V100-SXM2         -         -            1.000000MB   0x7f8342300000  [Unified Memory Memcpy HtoD]
+1.09919s  281.02ms           (3200 1 1)       (256 1 1)        31  2.0000KB        0B  Tesla V100-SXM2         1        14                     -                -  MonteCarloOneBlockPerOption(unsigned int*, unsigned int*, int*, int*, float*, double*, float*, float*, float*, float*, float*, float*, int, int) [845]
+1.38088s  85.697us                    -               -         -         -         -  Tesla V100-SXM2         -         -            1.000000MB   0x7f8342400000  [Unified Memory Memcpy DtoH]
+1.38167s  109.51us                    -               -         -         -         -  Tesla V100-SXM2         -         -            1.000000MB   0x7f8342500000  [Unified Memory Memcpy DtoH]
+
+Regs: Number of registers used per CUDA thread. This number includes registers used internally by the CUDA driver and/or tools and can be more than what the compiler shows.
+SSMem: Static shared memory allocated per CUDA block.
+DSMem: Dynamic shared memory allocated per CUDA block.
