@@ -1,5 +1,4 @@
 Parallelization_method,Problem_scaling,Number_of_GPUs,Total_number_of_options,Number_of_paths,Init_time_ms,Execution_time_ms
-
 streamed,weak,1,262144,262144,3.77236,290.83
 streamed,weak,1,262144,262144,3.2952,267.863
 streamed,weak,1,262144,262144,3.32629,269.08

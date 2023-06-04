@@ -17,17 +17,17 @@ do
     do
         for scaling in weak strong
         do
-            for method in streamed threaded 
+            for method in threaded streamed 
             do 
                 ./MonteCarlo --scaling=$scaling --method=$method --size=$size # COLD RUN
-                ./MonteCarlo --scaling=$scaling --method=$method --size=$size # COLD RUN
+                #./MonteCarlo --scaling=$scaling --method=$method --size=$size # COLD RUN
                 /usr/bin/time -f %e -o time.txt -a ./MonteCarlo --scaling=$scaling --method=$method --size=$size # for time averaging
                 /usr/bin/time -f %e -o time.txt -a ./MonteCarlo --scaling=$scaling --method=$method --size=$size # for time averaging
                 /usr/bin/time -f %e -o time.txt -a ./MonteCarlo --scaling=$scaling --method=$method --size=$size # for time averaging
                 /usr/bin/time -f %e -o time.txt -a ./MonteCarlo --scaling=$scaling --method=$method --size=$size # for time averaging
                 /usr/bin/time -f %e -o time.txt -a ./MonteCarlo --scaling=$scaling --method=$method --size=$size # for time averaging
-                nvprof --log-file ./nvprof/nvprof_${NUM_GPU}gpu_size${size}x${size}_${scaling}_${method}_${VERSION}.txt ./MonteCarlo --scaling=$scaling --method=$method --size=$size
-                nsys profile -o ./nsys/report_${NUM_GPU}gpu_size${size}x${size}_${scaling}_${method}_${VERSION} --stats=true --cuda-memory-usage=true --cuda-um-cpu-page-faults=true --cuda-um-gpu-page-faults=true --force-overwrite=true ./MonteCarlo --scaling=$scaling --method=$method --size=$size
+                #nvprof --log-file ./nvprof/nvprof_${NUM_GPU}gpu_size${size}x${size}_${scaling}_${method}_${VERSION}.txt ./MonteCarlo --scaling=$scaling --method=$method --size=$size
+                #nsys profile -o ./nsys/report_${NUM_GPU}gpu_size${size}x${size}_${scaling}_${method}_${VERSION} --stats=true --cuda-memory-usage=true --cuda-um-cpu-page-faults=true --cuda-um-gpu-page-faults=true --force-overwrite=true ./MonteCarlo --scaling=$scaling --method=$method --size=$size
             done
         done
     done
