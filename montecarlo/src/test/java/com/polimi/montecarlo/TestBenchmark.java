@@ -127,7 +127,7 @@ public class TestBenchmark
         ArrayList<String> dp, nsp, psp, cdp;
         ArrayList<Integer> ng;
         Integer nb; // number of blocks
-        Integer blockSize1D, blockSize2D;
+        Integer blockSize1D; //, blockSize2D;
         int num_iter = parsedConfig.num_iter;
 
         Benchmark benchToRun;

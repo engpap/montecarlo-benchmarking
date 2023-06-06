@@ -96,7 +96,7 @@ public abstract class Benchmark {
         }
 
         // Save the benchmark results
-        //benchmarkResults.saveToJsonFile(); //TODO: remove this comment to save the results to a json file
+        //benchmarkResults.saveToJsonFile();
 
         // Free the allocated arrays
         deallocDeviceArrays();

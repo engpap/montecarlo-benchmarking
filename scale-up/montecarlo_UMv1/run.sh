@@ -3,7 +3,7 @@ VERSION='UMv1'
 make clean
 make
 
-for NUM_GPU in 1 2
+for NUM_GPU in 4
 do
     if [ $NUM_GPU -eq 1 ]; then
         export CUDA_VISIBLE_DEVICES=0

@@ -3,7 +3,7 @@ VERSION='UMv3'
 make clean
 make
 
-for NUM_GPU in 1 2
+for NUM_GPU in 4
 do
     if [ $NUM_GPU -eq 1 ]; then
         export CUDA_VISIBLE_DEVICES=0
@@ -13,14 +13,14 @@ do
         export CUDA_VISIBLE_DEVICES=0,1,2,3
     fi
 
-    for size in 512 1024 4096 8192
+    for size in 8192
     do
-        for scaling in weak strong
+        for scaling in strong
         do
-            for method in streamed threaded 
+            for method in threaded streamed 
             do 
                 ./MonteCarlo --scaling=$scaling --method=$method --size=$size # COLD RUN
-                ./MonteCarlo --scaling=$scaling --method=$method --size=$size # COLD RUN
+                #./MonteCarlo --scaling=$scaling --method=$method --size=$size # COLD RUN
                 /usr/bin/time -f %e -o time.txt -a ./MonteCarlo --scaling=$scaling --method=$method --size=$size # for time averaging
                 /usr/bin/time -f %e -o time.txt -a ./MonteCarlo --scaling=$scaling --method=$method --size=$size # for time averaging
                 /usr/bin/time -f %e -o time.txt -a ./MonteCarlo --scaling=$scaling --method=$method --size=$size # for time averaging

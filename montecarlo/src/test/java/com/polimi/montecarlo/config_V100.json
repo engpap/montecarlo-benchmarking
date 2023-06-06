@@ -9,7 +9,7 @@
   "nvprof_profile": false,
   "num_elem": {
     "MonteCarlo": [
-      512
+      8192
     ]
   },
   "benchmarks": [
@@ -37,10 +37,10 @@
     "none"
   ],
   "scalingChoice": [
-    "strong"
+    "weak"
   ],
   "prefetch": [
-    true
+    false
   ],
   "stream_attach": [
     false
@@ -49,7 +49,7 @@
     false
   ],
   "num_gpus": [
-    "2"
+    "4"
   ],
   "block_size1d": {
     "MonteCarlo": 256

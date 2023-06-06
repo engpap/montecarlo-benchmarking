@@ -23,7 +23,6 @@ public class BenchmarkConfig {
     public boolean randomInit = false;
     public boolean reInit = true;
     public boolean reAlloc = true;
-    // TODO: mbhhhh
     public boolean cpuValidate = true;
     // GrCUDA context settings
     public String executionPolicy;
