@@ -4,14 +4,19 @@ This is a project of the [High Performance Processors and Systems](https://www4.
 This repository contains the evaluation and implementation of MonteCarlo workload on multi-GPU systems via Unified Memory and GrCUDA framework.
 The project is based on the [Tartan benchmarking suite](https://github.com/uuudown/Tartan/blob/master/IISWC-18.pdf), more specifically on the MonteCarlo benchmark scale-up implementation.
 
-## Overview of Monte-Carlo Simulation and Option Pricing
-The Monte Carlo option pricing simulation is an algorithm for estimating financial option values. It employs random sampling and statistical analysis to generate numerous price paths for the underlying asset. Each path represents a potential future price evolution. For each path, the algorithm calculates the option’s payoff at expiration using a chosen pricing model. This payoff is discounted to present value using a risk-free interest rate. By averaging the discounted payoffs across all paths, an estimate of the option’s expected value is obtained. The Monte Carlo simulation is well-suited for parallelization, particularly in multi-GPU systems. Workload distribution across multiple GPUs accelerates computation by assigning subsets of price paths to each GPU. Results are combined for the final estimated option value, enabling faster and more efficient pricing calculations.
+## Technical Report
+The technical report of the project can be found [here]().
+The report is a comprehensive document detailing the study and implementation of Monte-Carlo simulation for option pricing, implemented using multi-GPU CUDA C++, CUDA 11 with Unified Memory, and GrCUDA with GraalVM Java.
 
-## Problem Statement
-With the increasing demand for high computational power in emerging domains, multi-GPU computing has become essential to meet the requirements of deep learning, big data, and world-scale applications. However, the traditional method of manual handling of GPU device memory and data transfer can limit the performance of multi-GPU systems. NVIDIA’s Unified Memory paradigm provides a promising solution to this problem, but its impact on the performance of specific workloads needs to be investigated.
+The report covers the following aspects:
+1. An introduction and an overview of the Monte-Carlo Simulation and Option Pricing, including a problem statement and research objectives.
+2. A detailed description of the original multi-GPU CUDA C++ implementation, and the benchmark program flow and manual handling methods.
+3. A section on the Unified Memory (UM) implementation including porting to CUDA 11, initial UM porting, and a number of optimizations such as prefetching the memory and advising memory migration.
+4. An exploration of GrCUDA and GraalVM Java implementation, including porting to Java, program structure, program design, and a brief description of the classes involved. It also covers the binding from PTX files and additional optimizations.
+5. A thorough methodology section that outlines performance evaluation metrics, data collection and analysis tools, and the testing procedure.
+6. Results and discussion segment that compares performance across different versions, validation of data transfer patterns, profiling outputs, and various timing graphs.
 
-## Research Objectives
-The primary goal of this project is to evaluate the impact of NVIDIA’s Unified Memory paradigm on the performance of a specific workload, the Monte-Carlo simulation. This will be achieved by comparing the weak and strong scaling performance of a publicly available multi-GPU CUDA C++ implementation that manually handles GPU device memory and data transfer with the same implementation using Unified Memory and CUDA’s optimization features, such as memory prefetch and async data transfer. The project also aims to develop an equivalent Java implementation using GraalVM and the GrCUDA automatic scheduler, which removes the need for end-users to deal with optimizations on the CPU side. This will enable us to compare the performance of different implementations.
+Please refer to the report for a detailed understanding of the work done on this project.
 
 # Repository Structure
 Below is a brief overview of the main directories and files:
@@ -24,7 +29,7 @@ A directory dedicated to the GrCUDA implementation of the MonteCarlo benchmark.
 
 ### scale-up/ 
 A directory dedicated to the CUDA implementation of the MonteCarlo benchmark. It contains different versions:
-* /montecarlo: CUDA baseline version which reflects [Tartan implementation](https://github.com/uuudown/Tartan/blob/master/), ported in CUDA 11
+* /montecarlo: CUDA baseline version which reflects [Tartan implementation](https://github.com/uuudown/Tartan/tree/master/scale-up/scale-up/montecarlo), ported in CUDA 11
 * /montecarlo_UM: Unified Memory implementation
 * /montecarlo_UMv1: Unified Memory implementation with prefetching
 * /montecarlo_UMv2: Unified Memory implementation with advising
@@ -39,117 +44,90 @@ The grcuda jar file used for implementing the GrCUDA version.
 ### plot.py
 A Python script used for creating plots from profiling data.
 
-### run_grcuda.sh 
-A shell script used to run grcuda with all different configurations.
 
-### shared.mk
-Shared Makefile for the project.
-
-# How to run the benchmark versions
-
-
-## Useful Commands
-```conda deactivate```<br />
-```conda activate``` <br />
-<br />
-
-Nvprof:<br />
-
-```nvprof ./MonteCarlo --method=<method> --scaling=<scaling>```<br />
-
-To print the gpu trace: <br />
-
-```nvprof --print-gpu-trace ./MonteCarlo --method=<method> --scaling=<scaling>```<br />
-
-
-Nsight Systems:<br />
-
-```nsys profile -o <report_file_name> --stats=true --cuda-memory-usage=true --cuda-um-cpu-page-faults=true 	--cuda-um-gpu-page-faults=true --force-overwrite=true ./MonteCarlo --method=<method> --scaling=<scaling>```<br />
-
-```--stats=true``` to generate a summary of CPU and GPU activities
-or<br />
-```nsys profile ./MonteCarlo```<br />
-
-###========================================================================
-####         Author:  Ang Li, PNNL
-####        Website:  http://www.angliphd.com  
-####        Created:  03/19/2018 02:44:40 PM, Richland, WA, USA.
-###========================================================================
-
-- Introduction:
- This directory contains the 7 multi-GPU benchmarks for intr-node scale-up with PCI-e 
- and NVLink-V1/V2 interconnect.
-
-- Config:
+# How to set up your machine
+- Configuration:
  Set env in "shared.mk". You need to install NCCL library before building the NVLink version.
+- GrCUDA Installation:
+ Follow the instructions in the [Nects Lab's GrCUDA repository](https://github.com/necst/grcuda#installation).
+ 
+ # How to run the benchmarks
 
-- Run:
- Execute the python script: 
- ```
-   $ python run_scale_up.py 
- ```
- or enter into each app dir, make, and run:
- ```
-   $ cd scale-up/$app$/
-   $ make
+## Method A
+To run every possible configuration, take timings, produces nvprof and Nsight Systems report files:
+
+* For CUDA baseline version:
+ ``` 
+   $ cd scale-up/montecarlo/
    $ chmod +x run.sh
    $ ./run.sh
  ```
-##Scaling Test:
-  Strong scaling:
-  ```
-   $ ./run_1g_strong.sh
-   $ ./run_2g_strong.sh
-   $ ./run_4g_strong.sh
-   $ ./run_8g_strong.sh
-  ```
-  
-  Weak scaling: 
-  ```
-   $ ./run_1g_weak.sh
-   $ ./run_2g_weak.sh
-   $ ./run_4g_weak.sh
-   $ ./run_8g_weak.sh
-  ```
-##File Description: 
-```shell
-            shared.mk: Overall configuration file for all Makefile. Please config your env here.
 
-               common: Commonly-shared header and/or dependent third-party library
+ * For CUDA version 0:
+ ``` 
+   $ cd scale-up/montecarlo_UM/
+   $ chmod +x run.sh
+   $ ./run.sh
+ ```
 
-             scale-up: Benchmarks based on PCI-e interconnect
+* For CUDA version 1:
+ ``` 
+   $ cd scale-up/montecarlo_UMv1/
+   $ chmod +x run.sh
+   $ ./run.sh
+ ```
 
-      scale-up-nvlink: Benchmarks based on NVLink interconnect
+ * For CUDA version 2:
+ ``` 
+   $ cd scale-up/montecarlo_UMv2/
+   $ chmod +x run.sh
+   $ ./run.sh
+ ```
 
-      run_scale_up.py: Python script for testing
+ * For CUDA version 3:
+ ``` 
+   $ cd scale-up/montecarlo_UMv3/
+   $ chmod +x run.sh
+   $ ./run.sh
+ ```
 
+ * For GrCUDA version:
+ ``` 
+   $ chmod +x run_grcuda.sh
+   $ ./run_grcuda.sh
+ ```
+
+## Method B
+Alternatively, you may not be interested in report file. In that case, just run the single version by entering into each app dir, make, and run:
+ 
+* For CUDA versions: where NUM is in {1,2,4,8}, scalingChoice is in {strong, weak}, app is in {montecarlo, montecarlo_UM, montecarlo_UMv1, montecarlo_UMv2, montecarlo_UMv3}.
+ ```
+   $ cd scale-up/<app>/
+   $ make
+   $ chmod +x run.sh
+   $ ./run_<NUM>g_<scalingChoice>.sh
+ ```
+
+* For GrCUDA version:
+```
+  $ cd montecarlo/src/test/java/com/polimi/montecarlo
+  $ mvn test
 ```
 
-##Applications:
-```shell
-            ConvNet2: Convolution neural networks via data, model and hybrid parallelism
+# Useful Commands
 
-            Cusimann: global optmization via parallel simulated annealing algorithm.
+### Conda<br />
+```conda deactivate```<br />
+```conda activate``` <br />
 
-                 GMM: multivariate data clustering via Gaussian mixture model
+### Nvprof:<br />
+```nvprof ./MonteCarlo --method=<method> --scaling=<scaling>```<br />
+To print the gpu trace: <br />
+```nvprof --print-gpu-trace ./MonteCarlo --method=<method> --scaling=<scaling>```<br />
 
-              Kmeans: Kmeans-Clustering for double-precision data.
-
-          MonteCarlo: Monte-Carlo option pricing from CUDA-SDK
-
-              Planar: Depth-First-Search (DFS) and backtracing to solve Planar Langford's Sequence
-
-              Trueke: Exchange Monte-Carlo for 3D random field Ising model
-
-```
-
-
-## Note:
-
-    Please see our IISWC-18 paper "Tartan: Evaluating Modern GPU Interconnect via a 
-      Multi-GPU Benchmark Suite" for detail.
-
-    Please cite our paper if you find this package useful.  
-    
-
-
+### Nsight Systems:<br />
+```nsys profile -o <report_file_name> --stats=true --cuda-memory-usage=true --cuda-um-cpu-page-faults=true 	--cuda-um-gpu-page-faults=true --force-overwrite=true ./MonteCarlo --method=<method> --scaling=<scaling>```<br />
+To generate a summary of CPU and GPU activities: <br />
+```--stats=true``` 
+or<br />
+```nsys profile ./MonteCarlo```<br />
