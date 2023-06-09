@@ -8,16 +8,16 @@ The project is based on the [Tartan benchmarking suite](https://github.com/uuudo
 * [Andrea Paparella](https://github.com/engpap)
 * [Andrea Piras](https://github.com/andreapiras00)
 
-## Directory Structure and Files
+## Repository Structure
 Below is a brief overview of the main directories and files:
 
-# common/
+### common/
 A directory for common resources used across the project.
 
-# montecarlo/ 
+### montecarlo/ 
 A directory dedicated to the GrCUDA implementation of the MonteCarlo benchmark.
 
-# scale-up/ 
+### scale-up/ 
 A directory dedicated to the CUDA implementation of the MonteCarlo benchmark. It contains different versions:
 * /montecarlo: CUDA baseline version which reflects [Tartan implementation](https://github.com/uuudown/Tartan/blob/master/), ported in CUDA 11
 * /montecarlo_UM: Unified Memory implementation
@@ -25,20 +25,22 @@ A directory dedicated to the CUDA implementation of the MonteCarlo benchmark. It
 * /montecarlo_UMv2: Unified Memory implementation with advising
 * /montecarlo_UMv3: Unified Memory implementation with prefetching & advising
 
-# IISWC-18.pdf 
+### IISWC-18.pdf 
 Paper of the project's benchmark suite.
 
-# grcuda-0.1.1.jar 
+### grcuda-0.1.1.jar 
 The grcuda jar file used for implementing the GrCUDA version.
 
-# plot.py
+### plot.py
 A Python script used for creating plots from profiling data.
 
-# run_grcuda.sh 
+### run_grcuda.sh 
 A shell script used to run grcuda with all different configurations.
 
-# shared.mk
+### shared.mk
 Shared Makefile for the project.
+
+## How to run the benchmark versions
 
 
 ## Useful Commands
