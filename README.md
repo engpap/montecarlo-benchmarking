@@ -1,13 +1,45 @@
 # MonteCarlo Benchmarking
 This is a project of the [High Performance Processors and Systems](https://www4.ceda.polimi.it/manifesti/manifesti/controller/ManifestoPublic.do?EVN_DETTAGLIO_RIGA_MANIFESTO=evento&aa=2022&k_cf=225&k_corso_la=481&k_indir=T2A&codDescr=089185&lang=EN&semestre=2&idGruppo=4474&idRiga=281811) course of Politecnico Di Milano.
 
-This repository contains the evaluation and implementation of MonteCarlo workload on multi-GPU systems via Unified Memory.
-The project is based on the [Tartan benchmarking suite](https://github.com/uuudown/Tartan/blob/master/IISWC-18.pdf)
-
+This repository contains the evaluation and implementation of MonteCarlo workload on multi-GPU systems via Unified Memory and GrCUDA framework.
+The project is based on the [Tartan benchmarking suite](https://github.com/uuudown/Tartan/blob/master/IISWC-18.pdf), more specifically on the MonteCarlo benchmark scale-up implementation.
 
 ## Team
 * [Andrea Paparella](https://github.com/engpap)
 * [Andrea Piras](https://github.com/andreapiras00)
+
+## Directory Structure and Files
+Below is a brief overview of the main directories and files:
+
+# common/
+A directory for common resources used across the project.
+
+# montecarlo/ 
+A directory dedicated to the GrCUDA implementation of the MonteCarlo benchmark.
+
+# scale-up/ 
+A directory dedicated to the CUDA implementation of the MonteCarlo benchmark. It contains different versions:
+* /montecarlo: CUDA baseline version which reflects [Tartan implementation](https://github.com/uuudown/Tartan/blob/master/), ported in CUDA 11
+* /montecarlo_UM: Unified Memory implementation
+* /montecarlo_UMv1: Unified Memory implementation with prefetching
+* /montecarlo_UMv2: Unified Memory implementation with advising
+* /montecarlo_UMv3: Unified Memory implementation with prefetching & advising
+
+# IISWC-18.pdf 
+Paper of the project's benchmark suite.
+
+# grcuda-0.1.1.jar 
+The grcuda jar file used for implementing the GrCUDA version.
+
+# plot.py
+A Python script used for creating plots from profiling data.
+
+# run_grcuda.sh 
+A shell script used to run grcuda with all different configurations.
+
+# shared.mk
+Shared Makefile for the project.
+
 
 ## Useful Commands
 ```conda deactivate```<br />
