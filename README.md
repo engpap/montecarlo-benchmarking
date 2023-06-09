@@ -41,9 +41,6 @@ Paper of the project's benchmark suite.
 ### grcuda-0.1.1.jar 
 The grcuda jar file used for implementing the GrCUDA version.
 
-### plot.py
-A Python script used for creating plots from profiling data.
-
 
 # How to set up your machine
 - Configuration:
