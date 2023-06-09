@@ -98,34 +98,24 @@ To run every possible configuration, take timings, produces nvprof and Nsight Sy
 ## Method B
 Alternatively, you may not be interested in report file. In that case, just run the single version by entering into each app dir, make, and run:
  
-* For CUDA versions: where NUM is in {1,2,4,8}, scalingChoice is in {strong, weak}, app is in {montecarlo, montecarlo_UM, montecarlo_UMv1, montecarlo_UMv2, montecarlo_UMv3}.
+* For CUDA versions:
+
  ```
    $ cd scale-up/<app>/
    $ make
-   $ chmod +x run.sh
-   $ ./run_<NUM>g_<scalingChoice>.sh
+   $ export CUDA_VISIBLE_DEVICES=<gpu_list>
+   $ ./MonteCarlo --scaling=<scaling> --method=<method> --size=<size>
  ```
+  where:<br />
+  app is in {montecarlo, montecarlo_UM, montecarlo_UMv1, montecarlo_UMv2, montecarlo_UMv3} <br />
+  scaling is in {strong, weak} <br />
+  method is {threaded, streamed} <br />
+  size is in {512, 1024, 4096, 8192} <br />
+  gpu_list is "0" if 1 GPU, "0,1" if 2 GPUs, "0,1,2,3" if 4 GPUs, etc. <br />
 
+&nbsp;
 * For GrCUDA version:
 ```
   $ cd montecarlo/src/test/java/com/polimi/montecarlo
   $ mvn test
 ```
-
-# Useful Commands
-
-### Conda<br />
-```conda deactivate```<br />
-```conda activate``` <br />
-
-### Nvprof:<br />
-```nvprof ./MonteCarlo --method=<method> --scaling=<scaling>```<br />
-To print the gpu trace: <br />
-```nvprof --print-gpu-trace ./MonteCarlo --method=<method> --scaling=<scaling>```<br />
-
-### Nsight Systems:<br />
-```nsys profile -o <report_file_name> --stats=true --cuda-memory-usage=true --cuda-um-cpu-page-faults=true 	--cuda-um-gpu-page-faults=true --force-overwrite=true ./MonteCarlo --method=<method> --scaling=<scaling>```<br />
-To generate a summary of CPU and GPU activities: <br />
-```--stats=true``` 
-or<br />
-```nsys profile ./MonteCarlo```<br />
