@@ -1,14 +1,19 @@
 # MonteCarlo Benchmarking
+## Introduction
 This is a project of the [High Performance Processors and Systems](https://www4.ceda.polimi.it/manifesti/manifesti/controller/ManifestoPublic.do?EVN_DETTAGLIO_RIGA_MANIFESTO=evento&aa=2022&k_cf=225&k_corso_la=481&k_indir=T2A&codDescr=089185&lang=EN&semestre=2&idGruppo=4474&idRiga=281811) course of Politecnico Di Milano.
-
 This repository contains the evaluation and implementation of MonteCarlo workload on multi-GPU systems via Unified Memory and GrCUDA framework.
 The project is based on the [Tartan benchmarking suite](https://github.com/uuudown/Tartan/blob/master/IISWC-18.pdf), more specifically on the MonteCarlo benchmark scale-up implementation.
 
-## Team
-* [Andrea Paparella](https://github.com/engpap)
-* [Andrea Piras](https://github.com/andreapiras00)
+## Overview of Monte-Carlo Simulation and Option Pricing
+The Monte Carlo option pricing simulation is an algorithm for estimating financial option values. It employs random sampling and statistical analysis to generate numerous price paths for the underlying asset. Each path represents a potential future price evolution. For each path, the algorithm calculates the option’s payoff at expiration using a chosen pricing model. This payoff is discounted to present value using a risk-free interest rate. By averaging the discounted payoffs across all paths, an estimate of the option’s expected value is obtained. The Monte Carlo simulation is well-suited for parallelization, particularly in multi-GPU systems. Workload distribution across multiple GPUs accelerates computation by assigning subsets of price paths to each GPU. Results are combined for the final estimated option value, enabling faster and more efficient pricing calculations.
 
-## Repository Structure
+## Problem Statement
+With the increasing demand for high computational power in emerging domains, multi-GPU computing has become essential to meet the requirements of deep learning, big data, and world-scale applications. However, the traditional method of manual handling of GPU device memory and data transfer can limit the performance of multi-GPU systems. NVIDIA’s Unified Memory paradigm provides a promising solution to this problem, but its impact on the performance of specific workloads needs to be investigated.
+
+## Research Objectives
+The primary goal of this project is to evaluate the impact of NVIDIA’s Unified Memory paradigm on the performance of a specific workload, the Monte-Carlo simulation. This will be achieved by comparing the weak and strong scaling performance of a publicly available multi-GPU CUDA C++ implementation that manually handles GPU device memory and data transfer with the same implementation using Unified Memory and CUDA’s optimization features, such as memory prefetch and async data transfer. The project also aims to develop an equivalent Java implementation using GraalVM and the GrCUDA automatic scheduler, which removes the need for end-users to deal with optimizations on the CPU side. This will enable us to compare the performance of different implementations.
+
+# Repository Structure
 Below is a brief overview of the main directories and files:
 
 ### common/
@@ -40,7 +45,7 @@ A shell script used to run grcuda with all different configurations.
 ### shared.mk
 Shared Makefile for the project.
 
-## How to run the benchmark versions
+# How to run the benchmark versions
 
 
 ## Useful Commands
