@@ -90,6 +90,7 @@ To run every possible configuration, take timings, produces nvprof and Nsight Sy
 
  * For GrCUDA version:
  ``` 
+   $ cd montecarlo/
    $ chmod +x run_grcuda.sh
    $ ./run_grcuda.sh
  ```
