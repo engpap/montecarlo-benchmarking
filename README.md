@@ -5,7 +5,7 @@ This repository contains the evaluation and implementation of MonteCarlo workloa
 The project is based on the [Tartan benchmarking suite](https://github.com/uuudown/Tartan/blob/master/IISWC-18.pdf), more specifically on the MonteCarlo benchmark scale-up implementation.
 
 ## Technical Report
-The technical report of the project can be found [here]().
+The technical report of the project can be found [here](https://github.com/engpap/montecarlo-benchmarking/blob/main/report_montecarlo_benchmarking.pdf).
 The report is a comprehensive document detailing the study and implementation of Monte-Carlo simulation for option pricing, implemented using multi-GPU CUDA C++, CUDA 11 with Unified Memory, and GrCUDA with GraalVM Java.
 
 The report covers the following aspects:
