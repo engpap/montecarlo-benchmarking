@@ -4,6 +4,9 @@ This is a project of the [High Performance Processors and Systems](https://www4.
 This repository contains the evaluation and implementation of MonteCarlo workload on multi-GPU systems via Unified Memory and GrCUDA framework.
 The project is based on the [Tartan benchmarking suite](https://github.com/uuudown/Tartan/blob/master/IISWC-18.pdf), more specifically on the MonteCarlo benchmark scale-up implementation.
 
+## Presentation
+For an overview of the project and its results, please refer to the presentation [here](https://github.com/engpap/montecarlo-benchmarking/blob/main/montecarlo_benchmarking_presentation.pdf).
+
 ## Technical Report
 The technical report of the project can be found [here](https://github.com/engpap/montecarlo-benchmarking/blob/main/report_montecarlo_benchmarking.pdf).
 The report is a comprehensive document detailing the study and implementation of Monte-Carlo simulation for option pricing, implemented using multi-GPU CUDA C++, CUDA 11 with Unified Memory, and GrCUDA with GraalVM Java.
